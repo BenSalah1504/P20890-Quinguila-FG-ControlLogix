@@ -16,7 +16,7 @@ The original installation operated on a legacy **GE Fanuc VersaMax PLC** program
 2. **Legacy Plant Baseline:** RSLogix 5000 **v17.00** using the **1756-L63** (Logix 5560) controller.
 3. **Simulation Environment:** RSLogix Emulate 5000 **v17.00** using the **Emulator** processor.
 
-All 21 program routines, 316 ladder rungs, 823 controller tags, and 9 physical I/O modules have been fully mapped, converted, audited, and verified with zero syntax errors and 100% preservation of engineering rung comments and tag descriptions.
+All 21 program routines, 316 ladder rungs, 823 controller tags, and 9 physical I/O modules have been fully mapped, converted, audited, and verified with zero syntax errors, comprehensive engineering rung comments, and full subroutine documentation.
 
 ---
 
@@ -197,29 +197,6 @@ flowchart TD
     Main --> IOMapOut["IO_Mapping_Out (Physical Module Write)"]
 ```
 
-### Detailed Routine Summary
-
-| Routine Name | Rungs | Primary Engineering Function | Key Tags Processed |
-|:---|:---:|:---|:---|
-| `MainRoutine` | 22 | Master scan dispatcher invoking routines via `JSR` in strict order. | `S:FS`, `First_Scan` |
-| `Init` | 8 | Power-up initialization, watchdog timer setup, latch reset defaults. | `Timer_Init`, `System_Ready` |
-| `IO_Mapping_In` | 48 | Buffers raw slot words (`Local:7:I`, `Local:2..6:I`) to internal tags. | `Local:7:I.Data.*`, `Local:2:I.Ch*Data` |
-| `Input` | 14 | Digital input de-bounce, pulse detection, and sensor health flags. | `Pump_A_PulsIn`, `Pump_B_Start_PulsIn` |
-| `DI_1`, `DI_2` | 28 | Zone grouping, contact chatter suppression, door switch interlocks. | `ESDV_6401_001`, `LS_7503_001..002` |
-| `AI_1`, `AI_2`, `AI_3` | 42 | NAMUR NE 43 under-range/over-range checks, Low/High/High-High comparisons. | `DG_7404_001..010`, `PST_6401_001` |
-| `Vote_1` | 18 | 1oo2 and 2oo3 voting matrices for adjacent flame/gas detectors. | `Vote_Gas_High`, `Vote_Gas_HighHigh` |
-| `Logic` | 36 | Master Cause-and-Effect matrix, emergency reset logic (`System_Reset`). | `System_Reset`, `System_Reset_PB` |
-| `CE_LOG` | 16 | Cause and Effect event trapping, chronological first-out latches. | `CE_Trap_*`, `First_Out_Latch` |
-| `Sound` | 45 | Audible alarm siren cadences (intermittent/continuous), acoustic mute. | `System_Mute`, `Mute_Alm_PB`, `SA_7404_*` |
-| `Modbus_Comm` | 12 | Murphy Diesel Pump engine monitoring (RPM, oil pressure, coolant temp). | `Murphy_RPM`, `Murphy_OilPress`, `Murphy_Run` |
-| `Output` | 15 | Final command arbitration, pulse stretching, minimum trip timers. | `Pump_A_PulsOut`, `Pump_B_Start_PulsOut` |
-| `Shutdow` | 14 | Emergency Shutdown de-energize to trip interlocks. | `PumpShutdown`, `EY_6401_001_002` |
-| `Protect` | 10 | Equipment safeguarding, maintenance inhibit bypass logic. | `INHIBIT_ALL_OUTPUTS`, `INHIBIT_FOAM_REL` |
-| `Indicat` | 12 | Local panel LED pilot lamps and flasher generators. | `LAMP_CR1..CR6` |
-| `Loc_Al` | 9 | Local alarm annunciator Horn/Siren and Beacon flashing sequences. | `Loc_Horn`, `Loc_Beacon` |
-| `FLT_1` | 8 | Hardware module health check, open loop / broken wire diagnostics. | `PLC_Fault`, `Module_Fault_Word` |
-| `IO_Mapping_Out` | 32 | Writes logical commands to physical output points (`Local:8:O.Data.*`). | `Local:8:O.Data.0..31` |
-
 ---
 
 ## 6. Safety & Fail-Safe Engineering Philosophy
@@ -315,40 +292,29 @@ Total rungs checked: 316, Syntax errors: 0
 ws_g/
 ├── README.md                                          # Master Engineering Documentation
 ├── .gitignore                                         # Git ignore configuration
-├── dwg2pdf.py                                         # CAD drawing converter utility
 │
-├── Ladder_project/                                    # Main ControlLogix Engineering Package
-│   ├── P20890_Angola_Studio5000_V32_L82E.L5X         # Primary Studio 5000 v32 deliverable (1756-L82E)
-│   ├── P20890_Angola_RSLogix5000_V17.L5X              # Legacy RSLogix 5000 v17 deliverable (1756-L63)
-│   ├── P20890_Angola_RSLogix5000_V17_Emulate.L5X      # Offline Simulation deliverable (Emulator)
-│   ├── P20890_Angola_Conversion_Traceability.md       # Full rung-by-rung conversion traceability audit
-│   ├── P20890_Angola_Test_Matrix.md                   # Systematic QA verification test matrix
-│   ├── P20890_Angola_Pseudocode.html                  # Interactive HTML pseudocode browser
-│   ├── P20890_Angola_SFC.html                         # Sequential Function Chart visualizer
-│   ├── Bit_Alarm.xlsx                                 # Alarm mapping and threshold register list
-│   ├── var.xml                                        # Original GE Fanuc VersaMax exported database
-│   ├── build_perfect_l5x.py                           # High-precision XML serializer & builder
-│   ├── verify_all.py                                  # Automated multi-target verification suite
-│   ├── patch_and_rebuild.py                           # Hardware patching & regeneration engine
-│   ├── DOC/                                           # Original Engineering Specifications
-│   │   ├── DE-GN-FG-SAF-74-1001.xlsx                  # F&G Safety Matrix
-│   │   ├── F&G Operating Procedure.docx               # Field Operating Manual
-│   │   ├── General arrangement drawing.pdf            # Enclosure GA & internal layout
-│   │   ├── P20890-Functional & program description.docx # Functional logic narrative
-│   │   ├── Shutdown logic diagram.pdf                 # ESD logic functional diagram
-│   │   └── Terminal block connections.pdf             # Approved terminal block schedules
-│   └── LAD/                                           # Original GE VersaMax ladder printouts
-│
-├── autocad/                                           # Mechanical & Structural Enclosure Drawings
-│   ├── support_inox_316L_2024.dwg                     # AutoCAD 2024 stainless steel bracket plan
-│   ├── support_inox_316L_2024.dxf                     # DXF exchange format
-│   ├── support_inox_316L_laser_flat_2024.dxf          # CNC laser flat pattern (1:1 scale)
-│   └── index.html                                     # Interactive 3D WebGL model viewer
-│
-└── modbus/                                            # Modbus & Diesel Pump Engine Documentation
-    ├── S200 diesel pump.pdf                           # Clarke / Murphy S200 engine controller specs
-    ├── System architecture diagrams 01-MAN-03-11-PDF-C3A.pdf # Field communication architecture
-    └── Murphy/                                        # Murphy Modbus register maps & protocols
+└── Ladder_project/                                    # Main ControlLogix Engineering Package
+    ├── P20890_Angola_Studio5000_V32_L82E.L5X         # Primary Studio 5000 v32 deliverable (1756-L82E)
+    ├── P20890_Angola_RSLogix5000_V17.L5X              # Legacy RSLogix 5000 v17 deliverable (1756-L63)
+    ├── P20890_Angola_RSLogix5000_V17_Emulate.L5X      # Offline Simulation deliverable (Emulator)
+    ├── P20890_Angola_Conversion_Traceability.md       # Full rung-by-rung conversion traceability audit
+    ├── P20890_Angola_Test_Matrix.md                   # Systematic QA verification test matrix
+    ├── P20890_Angola_Pseudocode.html                  # Interactive HTML pseudocode browser
+    ├── P20890_Angola_SFC.html                         # Sequential Function Chart visualizer
+    ├── Bit_Alarm.xlsx                                 # Alarm mapping and threshold register list
+    ├── var.xml                                        # Original GE Fanuc VersaMax exported database
+    ├── comments_library.py                            # Master engineering comments dictionary
+    ├── apply_comments_to_all_l5x.py                   # Automated XML comments injector
+    ├── build_perfect_l5x.py                           # High-precision XML serializer & builder
+    ├── verify_all.py                                  # Automated multi-target verification suite
+    ├── DOC/                                           # Original Engineering Specifications
+    │   ├── DE-GN-FG-SAF-74-1001.xlsx                  # F&G Safety Matrix
+    │   ├── F&G Operating Procedure.docx               # Field Operating Manual
+    │   ├── General arrangement drawing.pdf            # Enclosure GA & internal layout
+    │   ├── P20890-Functional & program description.docx # Functional logic narrative
+    │   ├── Shutdown logic diagram.pdf                 # ESD logic functional diagram
+    │   └── Terminal block connections.pdf             # Approved terminal block schedules
+    └── LAD/                                           # Original GE VersaMax ladder printouts
 ```
 
 ---

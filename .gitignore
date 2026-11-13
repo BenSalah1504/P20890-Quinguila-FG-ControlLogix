@@ -26,3 +26,8 @@ $RECYCLE.BIN/
 
 # Log files
 *.log
+
+# Unrelated project folders in workspace
+autocad/
+modbus/
+dwg2pdf.py
