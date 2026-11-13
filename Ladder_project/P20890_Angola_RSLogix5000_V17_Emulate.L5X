@@ -3286,21 +3286,21 @@ Encapsulates 4-20mA signal conditioning, NAMUR NE 43 diagnostic fault thresholds
       <Tag Name="T00002" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          High 120 sec. after PLC set in run. | GE address %T00002 (BOOL), initial 0, retentive NO
+          Warmup_120s_Done | High 120 sec. after PLC set in RUN. Gates Cause & Effect matrix execution | GE address %T00002
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00013" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          For checking Open circuit on Start Pump | GE address %T00013 (BOOL), initial 0, retentive NO
+          Pump_A_Pulse_Done | Electric Pump A Start Pulse Duration Complete (Used for open circuit & start disagree diagnostics) | GE address %T00013
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00014" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          For checking Open circuit on Start Pump | GE address %T00014 (BOOL), initial 0, retentive NO
+          Pump_B_Pulse_Done | Diesel Pump B Start Pulse Duration Complete (Used for open circuit & start disagree diagnostics) | GE address %T00014
         ]]>
         </Description>
       </Tag>
@@ -5302,56 +5302,56 @@ Encapsulates 4-20mA signal conditioning, NAMUR NE 43 diagnostic fault thresholds
       <Tag Name="T00003" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          GE address %T00003 (BOOL), initial 0, retentive NO
+          Diesel_Crank_1_Trigger | Diesel Pump B Crank 1 Start Trigger (Fires 30s after Pump A fails to establish deluge pressure) | GE address %T00003
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00004" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          GE address %T00004 (BOOL), initial 0, retentive NO
+          Diesel_Crank_1_Done | Diesel Pump B Crank 1 Pulse Cutoff (2.0s pulse complete) | GE address %T00004
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00005" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          GE address %T00005 (BOOL), initial 0, retentive NO
+          Diesel_Crank_2_Trigger | Diesel Pump B Crank 2 Start Trigger (Fires 60s rest after Crank 1 if still no pressure) | GE address %T00005
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00006" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          GE address %T00006 (BOOL), initial 0, retentive NO
+          Diesel_Crank_2_Done | Diesel Pump B Crank 2 Pulse Cutoff (2.0s pulse complete) | GE address %T00006
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00007" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          GE address %T00007 (BOOL), initial 0, retentive NO
+          Diesel_Crank_3_Trigger | Diesel Pump B Crank 3 Start Trigger (Fires 60s rest after Crank 2 if still no pressure) | GE address %T00007
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00008" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          GE address %T00008 (BOOL), initial 0, retentive NO
+          Diesel_Crank_3_Done | Diesel Pump B Crank 3 Pulse Cutoff (2.0s pulse complete) | GE address %T00008
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00009" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          GE address %T00009 (BOOL), initial 0, retentive NO
+          Diesel_AutoStop_Delay_2s | Diesel Pump B Auto-Stop 2-Second Delay (Confirms all fire/deluge alarms clear before shutdown) | GE address %T00009
         ]]>
         </Description>
       </Tag>
       <Tag Name="T00010" TagType="Base" DataType="BOOL">
         <Description>
 <![CDATA[
-          GE address %T00010 (BOOL), initial 0, retentive NO
+          Deluge_Failed_Alarm_Timer | Deluge Failed to Release Alarm Watchdog (Fires 60s after Crank 3 if still no deluge pressure) | GE address %T00010
         ]]>
         </Description>
       </Tag>
