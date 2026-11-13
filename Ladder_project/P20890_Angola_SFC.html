@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P20890 Angola — IEC 61131-3 Sequential Function Chart (SFC / GRAFCET)</title>
+  <style>
+    :root[data-theme="dark"] {
+      --bg-main: #0d1117;
+      --bg-sidebar: #161b22;
+      --bg-card: #161b22;
+      --bg-canvas: #0b0f14;
+      --bg-step: #1c2128;
+      --bg-action: #121820;
+      --text-main: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent-soft: rgba(56, 139, 253, 0.15);
+      --active-token: #3fb950;
+      --active-glow: rgba(63, 185, 80, 0.28);
+      --trip-color: #f85149;
+      --trip-soft: rgba(248, 81, 73, 0.16);
+      --warn-color: #d29922;
+      --warn-soft: rgba(210, 153, 34, 0.16);
+      --qual-n: #58a6ff;
+      --qual-s: #3fb950;
+      --qual-r: #f85149;
+      --qual-p: #d2a8ff;
+      --qual-l: #ffa657;
+    }
+    :root[data-theme="light"] {
+      --bg-main: #f6f8fa;
+      --bg-sidebar: #ffffff;
+      --bg-card: #ffffff;
+      --bg-canvas: #f0f3f6;
+      --bg-step: #ffffff;
+      --bg-action: #f8fafc;
+      --text-main: #1f2328;
+      --text-muted: #57606a;
+      --border: #d0d7de;
+      --accent: #0969da;
+      --accent-soft: rgba(9, 105, 218, 0.12);
+      --active-token: #1a7f37;
+      --active-glow: rgba(26, 127, 55, 0.2);
+      --trip-color: #cf222e;
+      --trip-soft: rgba(207, 34, 46, 0.12);
+      --warn-color: #9a6700;
+      --warn-soft: rgba(154, 103, 0, 0.12);
+      --qual-n: #0969da;
+      --qual-s: #1a7f37;
+      --qual-r: #cf222e;
+      --qual-p: #8250df;
+      --qual-l: #9a6700;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    /* Top Bar */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .brand-badge {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: ui-monospace, monospace;
+    }
+    .top-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      background: var(--bg-step);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+    /* Layout */
+    .layout {
+      display: flex;
+      margin-top: 60px;
+      min-height: calc(100vh - 60px);
+    }
+    .sidebar {
+      width: 280px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 60px; bottom: 0; left: 0;
+      overflow-y: auto;
+      padding: 14px 10px 40px 10px;
+    }
+    .nav-section {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 14px 8px 6px 8px;
+      letter-spacing: 0.05em;
+    }
+    .nav-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 10px;
+      border-radius: 6px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    .nav-link:hover { background: var(--bg-step); color: var(--accent); }
+    .nav-pill {
+      font-size: 10px;
+      font-family: ui-monospace, monospace;
+      padding: 1px 6px;
+      border-radius: 8px;
+      background: var(--bg-canvas);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .content {
+      margin-left: 280px;
+      flex: 1;
+      padding: 24px 32px 80px 32px;
+      max-width: 1420px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 26px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .chart-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+    .card-title {
+      margin: 4px 0 0 0;
+      font-size: 20px;
+    }
+    .meta-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .meta-pill {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .meta-pill strong { color: var(--text-main); }
+
+    /* IEC 61131-3 Graphical SFC Diagram Styling */
+    .sfc-canvas {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      overflow-x: auto;
+    }
+    .sfc-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 680px;
+    }
+    .sfc-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+    .sfc-step-group {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+    .sfc-step {
+      width: 210px;
+      background: var(--bg-step);
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      padding: 10px 12px;
+      text-align: center;
+      position: relative;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .sfc-step.initial {
+      outline: 2px solid var(--accent);
+      outline-offset: -6px;
+    }
+    .sfc-step.step-active {
+      border-color: var(--active-token);
+      box-shadow: 0 0 14px var(--active-glow);
+      background: rgba(63, 185, 80, 0.08);
+    }
+    .sfc-step.step-active.initial {
+      outline-color: var(--active-token);
+    }
+    .sfc-step.step-trip {
+      border-color: var(--trip-color);
+    }
+    .sfc-step.step-trip.step-active {
+      background: var(--trip-soft);
+      box-shadow: 0 0 14px rgba(248, 81, 73, 0.35);
+    }
+    .token-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--border);
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .step-active .token-dot {
+      background: var(--active-token);
+      box-shadow: 0 0 8px var(--active-token);
+    }
+    .step-trip.step-active .token-dot {
+      background: var(--trip-color);
+      box-shadow: 0 0 8px var(--trip-color);
+    }
+    .step-id {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-main);
+    }
+    .step-name {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .step-rung {
+      font-size: 10px;
+      color: var(--accent);
+      font-family: ui-monospace, monospace;
+      margin-top: 4px;
+    }
+
+    /* Action Box attached to right of Step */
+    .sfc-connector-h {
+      width: 24px;
+      height: 2px;
+      background: var(--border);
+      align-self: center;
+    }
+    .sfc-actions {
+      background: var(--bg-action);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      min-width: 340px;
+      max-width: 520px;
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .action-row {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+    .action-row:last-child { border-bottom: none; }
+    .qual {
+      width: 54px;
+      min-width: 54px;
+      padding: 5px 6px;
+      font-weight: 700;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      background: rgba(128,128,128,0.06);
+    }
+    .qual-N { color: var(--qual-n); }
+    .qual-S { color: var(--qual-s); }
+    .qual-R { color: var(--qual-r); }
+    .qual-P { color: var(--qual-p); }
+    .qual-L, .qual-D { color: var(--qual-l); }
+    .act-body {
+      padding: 5px 10px;
+      color: var(--text-main);
+      flex: 1;
+    }
+    .act-cmt {
+      color: var(--text-muted);
+      font-size: 11px;
+      display: block;
+    }
+
+    /* Vertical Lines & Transitions */
+    .sfc-vline {
+      width: 2px;
+      height: 18px;
+      background: var(--text-muted);
+    }
+    .sfc-transition {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin: 2px 0;
+    }
+    .trans-bar {
+      width: 36px;
+      height: 5px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    .trans-cond {
+      position: absolute;
+      left: 26px;
+      white-space: nowrap;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 12px;
+      color: var(--qual-l);
+      background: var(--bg-canvas);
+      padding: 1px 8px;
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+    }
+    .trans-id {
+      position: absolute;
+      right: 26px;
+      white-space: nowrap;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* Parallel & Alternative Branch Bars */
+    .sfc-parallel-bar {
+      width: 82%;
+      height: 6px;
+      border-top: 2px solid var(--text-main);
+      border-bottom: 2px solid var(--text-main);
+      margin: 2px 0;
+    }
+    .sfc-alt-bar {
+      width: 82%;
+      height: 2px;
+      background: var(--text-main);
+      margin: 2px 0;
+    }
+    .sfc-columns {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      padding: 8px 0;
+    }
+    .sfc-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+
+    /* Simulator Panel */
+    .sim-panel {
+      background: var(--bg-action);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+    }
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .sim-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sim-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .sim-status {
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      color: var(--active-token);
+      background: var(--bg-canvas);
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    /* IEC 61131-3 Textual SFC Code Block */
+    .code-wrapper {
+      margin-top: 16px;
+      display: none;
+    }
+    body.show-iec-code .code-wrapper {
+      display: block;
+    }
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-step);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      padding: 7px 14px;
+      border-radius: 6px 6px 0 0;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    pre.iec-code {
+      margin: 0;
+      padding: 14px;
+      background: var(--bg-canvas);
+      border: 1px solid var(--border);
+      border-radius: 0 0 6px 6px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+
+    /* Legend Table */
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .legend-item {
+      background: var(--bg-canvas);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    table.trace-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      margin-top: 10px;
+    }
+    table.trace-table th, table.trace-table td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: left;
+    }
+    table.trace-table th {
+      background: var(--bg-step);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body class="show-iec-code">
+
+  <header class="topbar">
+    <div class="brand">
+      <span>P20890 Angola — Sequential Function Chart (SFC / GRAFCET)</span>
+      <span class="brand-badge">IEC 61131-3</span>
+    </div>
+    <div class="top-controls">
+      <button class="btn active" id="btnToggleCode" onclick="toggleIecCode()">IEC 61131-3 SFC Code</button>
+      <button class="btn" onclick="toggleTheme()">Light / Dark Theme</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="nav-section">Overview &amp; Legend</div>
+      <a class="nav-link" href="#overview"><span>SFC Architecture &amp; Qualifiers</span></a>
+
+      <div class="nav-section">SFC Charts (100% Program)</div>
+      <a class="nav-link" href="#sfc-01"><span>1. Master Scan &amp; 120s Warmup</span><span class="nav-pill">_MAIN/Logic</span></a>
+      <a class="nav-link" href="#sfc-02"><span>2. Channel Alarm &amp; First-Up</span><span class="nav-pill">DI_1/AI_1..3</span></a>
+      <a class="nav-link" href="#sfc-03"><span>3. Deluge Pump A/B Sequence</span><span class="nav-pill">CE_LOG/Protect</span></a>
+      <a class="nav-link" href="#sfc-04"><span>4. ESD &amp; Fuel Gas Shutdown</span><span class="nav-pill">CE_LOG/Shutdow</span></a>
+      <a class="nav-link" href="#sfc-05"><span>5. Sound, Mute &amp; Re-Trigger</span><span class="nav-pill">Sound/Loc_Al</span></a>
+      <a class="nav-link" href="#sfc-06"><span>6. 70s Coil Line Supervision</span><span class="nav-pill">Protect/FLT_1</span></a>
+
+      <div class="nav-section">Traceability</div>
+      <a class="nav-link" href="#traceability"><span>Ladder-to-SFC Mapping Table</span><span class="nav-pill">24 Routines</span></a>
+    </nav>
+
+    <main class="content">
+
+      <!-- Overview & IEC 61131-3 Action Qualifier Legend -->
+      <section class="card" id="overview">
+        <div class="card-header">
+          <div>
+            <div class="chart-tag">IEC 61131-3 GRAFCET / Sequential Function Chart Specification</div>
+            <h1 class="card-title">Project P20890 (Angola) — Complete Ladder-to-SFC Conversion</h1>
+          </div>
+        </div>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin: 0 0 12px 0;">
+          The 24 GE Fanuc VersaMax ladder routines (<code>LAD/*.pdf</code>) and 373 RSLogix 5000 rungs (<code>.L5X</code>) are decomposed into <strong>6 cooperating IEC 61131-3 Sequential Function Charts (SFCs)</strong>. Use the interactive simulator controls inside <strong>Chart 1</strong> and <strong>Chart 3</strong> to step through the live state transitions.
+        </p>
+        <div class="legend-grid">
+          <div class="legend-item"><strong class="qual-N">[N] Non-Stored</strong>: Action executes continuously while the step is active, and turns OFF when the step deactivates (equivalent to normal PLC <code>COIL</code> / <code>OTE</code>).</div>
+          <div class="legend-item"><strong class="qual-S">[S] Set (Stored)</strong>: Latches the variable TRUE when the step becomes active; remains TRUE until explicitly reset (equivalent to <code>SETCOIL</code> / <code>OTL</code> or seal-in branch).</div>
+          <div class="legend-item"><strong class="qual-R">[R] Reset</strong>: Resets a stored variable or timer/counter to FALSE / 0 when the step becomes active (equivalent to <code>RESETCOIL</code> / <code>OTU</code> / <code>RES</code>).</div>
+          <div class="legend-item"><strong class="qual-P">[P] Pulse (One-Shot)</strong>: Executes once on the rising edge when the step is entered (equivalent to GE <code>POSCOIL</code> / L5X <code>ONS</code>).</div>
+          <div class="legend-item"><strong class="qual-L">[L t#] Time-Limited</strong>: Runs for at most duration <code>t#</code> while the step is active (used for 2.0s Diesel Pump B Start/Stop pulses).</div>
+          <div class="legend-item"><strong>Double Bar (<code>===</code>) vs Single Bar (<code>---</code>)</strong>: Double horizontal bars denote <strong>Simultaneous Parallel Branches</strong> (all active together); single bars denote <strong>Exclusive Alternative Branches</strong>.</div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SFC CHART 1: MASTER PLC EXECUTIVE & 120s STARTUP STABILIZATION         -->
+      <!-- ===================================================================== -->
+      <section class="card" id="sfc-01">
+        <div class="card-header">
+          <div>
+            <div class="chart-tag">SFC Chart 01 — Executive, Startup Warmup &amp; System Reset</div>
+            <h2 class="card-title">SFC_01_Master_Executive (<code>_MAIN</code>, <code>Init</code>, <code>Input</code>, <code>Logic</code>, <code>Output</code>)</h2>
+          </div>
+          <div class="meta-pills">
+            <span class="meta-pill">Source: <strong>_MAIN.pdf, Init.pdf, Input.pdf, Logic.pdf, Output.pdf</strong></span>
+            <span class="meta-pill">Key Timers: <strong>System_C_E_Delay (120.0s), System_HMI_Reset_Timer (5.0s)</strong></span>
+          </div>
+        </div>
+
+        <!-- Interactive Simulator for Chart 1 -->
+        <div class="sim-panel">
+          <div class="sim-header">
+            <div class="sim-title">&#9654; Interactive Startup &amp; Executive Simulator</div>
+            <div class="sim-status" id="sim1Status">State: S0_INIT (First Scan #FST_SCN = 1)</div>
+          </div>
+          <div class="sim-controls">
+            <button class="btn" onclick="setSim1('S0')">1. Power-On First Scan (S0_INIT)</button>
+            <button class="btn" onclick="setSim1('S10')">2. Warmup 0..118s (S10_WARMUP_118S)</button>
+            <button class="btn" onclick="setSim1('S11')">3. Last 2s Pre-Enable Auto-Reset (S11_AUTO_RESET)</button>
+            <button class="btn" onclick="setSim1('S12')">4. Normal Operation &ge; 120s (S12_CE_ACTIVE)</button>
+            <button class="btn" onclick="setSim1('S13')">5. Operator HMI Reset 5s Pulse (S13_HMI_RESET)</button>
+          </div>
+        </div>
+
+        <div class="sfc-canvas">
+          <div class="sfc-flow">
+            <!-- S0_INIT -->
+            <div class="sfc-step-group">
+              <div class="sfc-step initial step-active" id="c1-S0">
+                <div class="step-id"><span class="token-dot"></span>S0_INIT</div>
+                <div class="step-name">First PLC Scan Initialization</div>
+                <div class="step-rung">_MAIN R1 &rarr; Init R1..R2</div>
+              </div>
+              <div class="sfc-connector-h"></div>
+              <div class="sfc-actions">
+                <div class="action-row"><div class="qual qual-P">P</div><div class="act-body">Pump_Timer1..13 (%R00205..0243) := 0;<span class="act-cmt">Clear all 13 pump/deluge timer blocks (ARRAY_MOVE_INT)</span></div></div>
+                <div class="action-row"><div class="qual qual-P">P</div><div class="act-body">System_C_E_Delay (%R00202..0204) := 0;</div></div>
+                <div class="action-row"><div class="qual qual-R">R</div><div class="act-body">Tag_DO_15_INT (%M00215) := 0; SA_7404_001_002_INT (%M00202) := 0;</div></div>
+              </div>
+            </div>
+
+            <div class="sfc-vline"></div>
+            <div class="sfc-transition">
+              <div class="trans-id">T0_FirstScanDone</div>
+              <div class="trans-bar"></div>
+              <div class="trans-cond">NOT #FST_SCN (%S00001)</div>
+            </div>
+            <div class="sfc-vline"></div>
+
+            <!-- Parallel Divergence into Cyclic Scan + Startup State Machine + HMI Reset -->
+            <div class="sfc-parallel-bar"></div>
+
+            <div class="sfc-columns">
+              <!-- Column 1: Cyclic I/O & Sound Scan -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c1-S1">
+                    <div class="step-id"><span class="token-dot"></span>S1_CYCLIC_IO_SOUND</div>
+                    <div class="step-name">Continuous Scan Pipeline</div>
+                    <div class="step-rung">_MAIN R2, Input, Logic R14, Output</div>
+                  </div>
+                </div>
+                <div class="sfc-actions" style="margin-top: 8px; min-width: 280px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">CALL Input();<span class="act-cmt">DI_1 &rarr; DI_2 &rarr; AI_1..3 &rarr; Vote_1</span></div></div>
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">CALL Sound();<span class="act-cmt">38 POSCOIL alarm edge detectors</span></div></div>
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">CALL Output();<span class="act-cmt">Shutdow &rarr; Protect &rarr; Indicat &rarr; Loc_Al &rarr; FLT_1</span></div></div>
+                </div>
+              </div>
+
+              <!-- Column 2: 120s Startup Stabilization & C&E Enable -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c1-S10">
+                    <div class="step-id"><span class="token-dot"></span>S10_WARMUP_118S</div>
+                    <div class="step-name">Detector Stabilization (0..118s)</div>
+                    <div class="step-rung">Logic R9..R10 (%R00202)</div>
+                  </div>
+                </div>
+                <div class="sfc-actions" style="margin-top: 6px; min-width: 300px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">ONDTR(System_C_E_Delay, PV := 120.0s);<span class="act-cmt">HelpReg (%R00232) := 1200 - Elapsed; CE_LOG Inhibited</span></div></div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T10</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">NOT T00002 AND (HelpReg &le; 20) [t &ge; 118.0s]</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c1-S11">
+                    <div class="step-id"><span class="token-dot"></span>S11_AUTO_RESET_2S</div>
+                    <div class="step-name">Pre-Enable Startup Reset (118..120s)</div>
+                    <div class="step-rung">Logic R1, R5..R8, R11</div>
+                  </div>
+                </div>
+                <div class="sfc-actions" style="margin-top: 6px; min-width: 300px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">System_Reset_Startup (%M00702) := 1;<span class="act-cmt">Drives System_Reset (%M00700) := 1 &amp; SVC_REQ 14</span></div></div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T11</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00002 (%T00002) == TRUE [t &ge; 120.0s]</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c1-S12">
+                    <div class="step-id"><span class="token-dot"></span>S12_CE_ACTIVE</div>
+                    <div class="step-name">Cause &amp; Effect Armed (&ge; 120s)</div>
+                    <div class="step-rung">Logic R13 &rarr; CALL CE_LOG</div>
+                  </div>
+                </div>
+                <div class="sfc-actions" style="margin-top: 6px; min-width: 300px;">
+                  <div class="action-row"><div class="qual qual-R">R</div><div class="act-body">System_Reset_Startup (%M00702) := 0;</div></div>
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">CALL CE_LOG();<span class="act-cmt">Full ESD &amp; Deluge protection active</span></div></div>
+                </div>
+              </div>
+
+              <!-- Column 3: Operator HMI Reset 5s Handler -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c1-S13Idle">
+                    <div class="step-id"><span class="token-dot"></span>S13_RESET_IDLE</div>
+                    <div class="step-name">Wait for HMI Reset Command</div>
+                    <div class="step-rung">Logic R1..R4</div>
+                  </div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T13A</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">System_Reset_HMI (%M00703) == 1</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c1-S13">
+                    <div class="step-id"><span class="token-dot"></span>S13_HMI_RESET_5S</div>
+                    <div class="step-name">5.0s Reset Pulse &amp; Fault Clear</div>
+                    <div class="step-rung">Logic R1..R8 (T00001)</div>
+                  </div>
+                </div>
+                <div class="sfc-actions" style="margin-top: 6px; min-width: 280px;">
+                  <div class="action-row"><div class="qual qual-L">L 5.0s</div><div class="act-body">System_Reset (%M00700) := 1;<span class="act-cmt">Unlatches all cleared alarms &amp; First-Up</span></div></div>
+                  <div class="action-row"><div class="qual qual-P">P</div><div class="act-body">SVC_REQ(14, ClearPLC); SVC_REQ(14, ClearIO);</div></div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T13B</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00001 (5.0s Elapsed) &rarr; Reset %M00703 &rarr; S13_RESET_IDLE</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>IEC 61131-3 Textual SFC — Chart 01 (SFC_01_Master_Executive)</span>
+            <button class="btn" onclick="copyPre(this)">Copy IEC SFC</button>
+          </div>
+          <pre class="iec-code">INITIAL_STEP S0_INIT:
+    A_Init_ClearTimers(P);       (* Zero Pump_Timer1..13 %R00205..0243 & System_C_E_Delay %R00202 *)
+    A_Init_UnlatchSound(R);      (* Reset Tag_DO_15_INT %M00215 & SA_7404_001_002_INT %M00202 *)
+END_STEP
+
+TRANSITION T0_FirstScanDone FROM S0_INIT TO (S1_CYCLIC_IO_SOUND, S10_WARMUP_118S, S13_RESET_IDLE)
+    := NOT #FST_SCN;
+END_TRANSITION
+
+(* --- Parallel Branch 1: Continuous Scan Pipeline --- *)
+STEP S1_CYCLIC_IO_SOUND:
+    A_Call_Input(N);             (* DI_1 -> DI_2 -> AI_1 -> AI_2 -> AI_3 -> Vote_1 *)
+    A_Call_Sound(N);             (* 38 Rising-Edge POSCOIL Triggers & Mute *)
+    A_Call_Output(N);            (* Shutdow -> Protect -> Indicat -> Loc_Al -> FLT_1 *)
+END_STEP
+
+(* --- Parallel Branch 2: 120.0s Sensor Stabilization Warmup --- *)
+STEP S10_WARMUP_118S:
+    A_Run_Warmup_Timer(N);       (* ONDTR System_C_E_Delay PV=1200 [120.0s]; HelpReg := 1200 - CV *)
+END_STEP
+
+TRANSITION T10_Last2Seconds FROM S10_WARMUP_118S TO S11_AUTO_RESET_2S
+    := (NOT T00002) AND (System_Reset_HelpRegister &lt;= 20);
+END_TRANSITION
+
+STEP S11_AUTO_RESET_2S:
+    System_Reset_Startup(N);     (* Pulses System_Reset %M00700 for final 2.0s of warmup *)
+    A_Clear_Fault_Tables(P);     (* SVC_REQ 14 Clear PLC & I/O Fault Tables *)
+END_STEP
+
+TRANSITION T11_WarmupComplete FROM S11_AUTO_RESET_2S TO S12_CE_ACTIVE
+    := T00002;                   (* 120.0s elapsed: Cause & Effect enabled *)
+END_TRANSITION
+
+STEP S12_CE_ACTIVE:
+    System_Reset_Startup(R);
+    A_Call_CE_LOG(N);            (* Execute Cause & Effect Matrix every scan *)
+END_STEP</pre>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SFC CHART 2: INPUT CHANNEL SCALING, ALARM LATCHING & FIRST-UP          -->
+      <!-- ===================================================================== -->
+      <section class="card" id="sfc-02">
+        <div class="card-header">
+          <div>
+            <div class="chart-tag">SFC Chart 02 — Per-Channel Conditioning, Fault Suppression &amp; First-Up Arbitration</div>
+            <h2 class="card-title">SFC_02_Channel_Lifecycle (<code>DI_1</code>, <code>CalcVa1..3</code>, <code>Ai_AL_1..3</code>, <code>AI_1..3</code>, <code>Vote_1</code>)</h2>
+          </div>
+          <div class="meta-pills">
+            <span class="meta-pill">Applies To: <strong>22 Analog Channels (%AI0001..0022) &amp; 13 Discrete Channels (%I0001..0013)</strong></span>
+            <span class="meta-pill">First-Up Lock: <strong>System_AnyActions (%M00701)</strong></span>
+          </div>
+        </div>
+
+        <div class="sfc-canvas">
+          <div class="sfc-flow">
+            <div class="sfc-step-group">
+              <div class="sfc-step initial step-active">
+                <div class="step-id"><span class="token-dot"></span>S20_CH_NORMAL</div>
+                <div class="step-name">Scale &amp; Compare Channel</div>
+                <div class="step-rung">AI_1..3 Rungs 1..3 / DI_1</div>
+              </div>
+              <div class="sfc-connector-h"></div>
+              <div class="sfc-actions">
+                <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">Scale Raw %AI via CalcVa1 (-25..100), CalcVa2 (-37..150), or CalcVa3 (-1.25..5.00)</div></div>
+                <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">Evaluate AI_LoAlarm, AI_HiAlarm, AI_LoFault (OC), AI_HiFault (SC), AI_Fault1 (Optical)</div></div>
+              </div>
+            </div>
+
+            <div class="sfc-vline"></div>
+            <div class="sfc-alt-bar"></div>
+
+            <div class="sfc-columns">
+              <!-- Branch A: Fault -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T20_Fault</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">(AI_LoFault OR AI_HiFault OR AI_Fault1) AND NOT Ch_INH</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S21_LINE_FAULT</div>
+                  <div class="step-name">Open / Short / Optical Fault</div>
+                  <div class="step-rung">AI_1..3 Rungs 9..10 &rarr; Vote_1 R4</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:260px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">Ch_OC := AI_LoFault; Ch_SC := AI_HiFault;<span class="act-cmt">Asserts Voting_All_Faults (%M00608)</span></div></div>
+                  <div class="action-row"><div class="qual qual-R">R</div><div class="act-body">Suppress Ch_ALL := 0; Ch_ALH := 0;<span class="act-cmt">Prevents false gas/fire trip on wire break/short</span></div></div>
+                </div>
+              </div>
+
+              <!-- Branch B: Low Alarm -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T21_LoAlm</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">AI_LoAlarm AND NOT (Ch_OC OR Ch_SC)</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step">
+                  <div class="step-id"><span class="token-dot"></span>S22_LO_ALARM</div>
+                  <div class="step-name">Low Alarm Latched</div>
+                  <div class="step-rung">AI_1..3 Rungs 4..5 &rarr; Vote_1 R1</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:260px;">
+                  <div class="action-row"><div class="qual qual-S">S</div><div class="act-body">Ch_ALL := TRUE;<span class="act-cmt">Latched for HMI / VDU Display</span></div></div>
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">Ch_ALLI := Ch_ALL AND NOT Ch_INH;<span class="act-cmt">Drives Voting_DG_7404_ALLI (%M00605) &amp; Sound</span></div></div>
+                </div>
+              </div>
+
+              <!-- Branch C: High Alarm & First-Up -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T22_HiAlm</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">AI_HiAlarm AND NOT (Ch_OC OR Ch_SC)</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S23_HI_ALARM</div>
+                  <div class="step-name">High Alarm Latched (C&amp;E Trip)</div>
+                  <div class="step-rung">AI_1..3 Rungs 6..7 &rarr; Vote_1 R2</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:280px;">
+                  <div class="action-row"><div class="qual qual-S">S</div><div class="act-body">Ch_ALH := TRUE;</div></div>
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">Ch_ALHI := Ch_ALH AND NOT Ch_INH;<span class="act-cmt">Triggers ESD / Deluge in CE_LOG</span></div></div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T23_FirstUp</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">Ch_ALHI AND NOT System_AnyActions (%M00701)</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S24_FIRST_UP</div>
+                  <div class="step-name">First-Up Initiating Cause Locked</div>
+                  <div class="step-rung">AI_1..3 Rung 8 / DI_1 R33..42</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:280px;">
+                  <div class="action-row"><div class="qual qual-S">S</div><div class="act-body">Ch_FRUP := TRUE;<span class="act-cmt">Identifies first detector to reach High Alarm</span></div></div>
+                  <div class="action-row"><div class="qual qual-S">S</div><div class="act-body">System_AnyActions (%M00701) := TRUE;<span class="act-cmt">Blocks all subsequent channels from setting _FRUP</span></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sfc-alt-bar"></div>
+            <div class="sfc-vline"></div>
+            <div class="sfc-transition">
+              <div class="trans-id">T24_Reset</div>
+              <div class="trans-bar"></div>
+              <div class="trans-cond">System_Reset (%M00700) [OR Pump_Active_1_Hour / FS_7503_001_ALI for Flame &amp; Foam PBs] &rarr; S20_CH_NORMAL</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>IEC 61131-3 Textual SFC — Chart 02 (SFC_02_Channel_Lifecycle)</span>
+            <button class="btn" onclick="copyPre(this)">Copy IEC SFC</button>
+          </div>
+          <pre class="iec-code">INITIAL_STEP S20_CH_NORMAL:
+    A_Scale_Channel(N);                (* CalcVa1 [-25..100], CalcVa2 [-37..150], or CalcVa3 [-1.25..5.00] *)
+    A_Compare_Thresholds(N);           (* Ai_AL_1 / Ai_AL_2 / Ai_AL_3 -> LoAlarm, HiAlarm, LoFault, HiFault, Fault1 *)
+END_STEP
+
+TRANSITION T20_Fault FROM S20_CH_NORMAL TO S21_LINE_FAULT
+    := (AI_LoFault OR AI_HiFault OR AI_Fault1) AND NOT Ch_INH;
+END_TRANSITION
+
+STEP S21_LINE_FAULT:
+    Ch_OC(N);                          (* Open-Circuit Fault %M00305..0443 *)
+    Ch_SC(N);                          (* Short-Circuit Fault %M00306..0444 *)
+    Ch_ALL(R);                         (* Suppress Lo Alarm during line fault *)
+    Ch_ALH(R);                         (* Suppress Hi Alarm during line fault *)
+    Voting_All_Faults(N);              (* Asserts %M00608 in Vote_1 Rung 4 *)
+END_STEP
+
+TRANSITION T21_LoAlm FROM S20_CH_NORMAL TO S22_LO_ALARM
+    := AI_LoAlarm AND NOT (Ch_OC OR Ch_SC) AND NOT System_Reset;
+END_TRANSITION
+
+STEP S22_LO_ALARM:
+    Ch_ALL(S);                         (* Latched VDU Low Alarm *)
+    A_Gate_LoAlarm_Inhibit(N);         (* Ch_ALLI := Ch_ALL AND NOT Ch_INH -> Voting_DG_7404_ALLI %M00605 *)
+END_STEP
+
+TRANSITION T22_HiAlm FROM (S20_CH_NORMAL, S22_LO_ALARM) TO S23_HI_ALARM
+    := AI_HiAlarm AND NOT (Ch_OC OR Ch_SC) AND NOT System_Reset;
+END_TRANSITION
+
+STEP S23_HI_ALARM:
+    Ch_ALH(S);                         (* Latched VDU High Alarm *)
+    A_Gate_HiAlarm_Inhibit(N);         (* Ch_ALHI := Ch_ALH AND NOT Ch_INH -> Voting_DG_7404_ALHI %M00606 *)
+END_STEP
+
+TRANSITION T23_FirstUp FROM S23_HI_ALARM TO S24_FIRST_UP
+    := Ch_ALHI AND NOT System_AnyActions;
+END_TRANSITION
+
+STEP S24_FIRST_UP:
+    Ch_FRUP(S);                        (* Latches First-Up indicator bit for this channel *)
+    System_AnyActions(S);              (* Locks %M00701 := TRUE so no subsequent channel can claim First-Up *)
+END_STEP
+
+TRANSITION T24_Reset FROM (S21_LINE_FAULT, S22_LO_ALARM, S23_HI_ALARM, S24_FIRST_UP) TO S20_CH_NORMAL
+    := System_Reset;                   (* Plus OR Pump_Active_1_Hour OR FS_7503_001_ALI for Flame/Foam channels *)
+END_TRANSITION</pre>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SFC CHART 3: DELUGE DUTY PUMP A & STANDBY PUMP B 3-ATTEMPT SEQUENCE    -->
+      <!-- ===================================================================== -->
+      <section class="card" id="sfc-03">
+        <div class="card-header">
+          <div>
+            <div class="chart-tag">SFC Chart 03 — Deluge / Foam Skid Duty-Standby Escalation Sequence</div>
+            <h2 class="card-title">SFC_03_Deluge_Sequence (<code>CE_LOG</code> Rungs 3..7, <code>Protect</code> Rungs 1..3)</h2>
+          </div>
+          <div class="meta-pills">
+            <span class="meta-pill">Duty Pump: <strong>Electric Pump A (%Q0005, 1-Hr Max)</strong></span>
+            <span class="meta-pill">Standby Pump: <strong>Diesel Pump B (%Q0007, 3x 2s Pulses @ 30s, 92s, 154s)</strong></span>
+            <span class="meta-pill">Pressure Feedback: <strong>PST_7503_001_ALHI (&ge; 50 PSI)</strong></span>
+          </div>
+        </div>
+
+        <!-- Interactive Simulator for Chart 3 -->
+        <div class="sim-panel">
+          <div class="sim-header">
+            <div class="sim-title">&#9654; Interactive Deluge Pump A / Pump B Escalation Simulator</div>
+            <div class="sim-status" id="sim3Status">State: S30_DELUGE_IDLE (Standby — 2.0s Stop Pulse Sent)</div>
+          </div>
+          <div class="sim-controls">
+            <button class="btn" onclick="setSim3('S30')">0. Idle / Stop Foam (S30)</button>
+            <button class="btn" onclick="setSim3('S32')">1. Fire/Foam Triggered: Pump A ON + Wait 30s (S31 + S32)</button>
+            <button class="btn" onclick="setSim3('S33')">2. t=30s No Press: Pump B Pulse #1 [2s] (S33)</button>
+            <button class="btn" onclick="setSim3('S34')">3. t=32s..92s Wait 60s (S34)</button>
+            <button class="btn" onclick="setSim3('S35')">4. t=92s Pump B Pulse #2 [2s] (S35)</button>
+            <button class="btn" onclick="setSim3('S36')">5. t=94s..154s Wait 60s (S36)</button>
+            <button class="btn" onclick="setSim3('S37')">6. t=154s Pump B Pulse #3 [2s] (S37)</button>
+            <button class="btn" onclick="setSim3('S38')">7. t=156s..216s Final 60s Wait (S38)</button>
+            <button class="btn" onclick="setSim3('S40')">8. t=216s Deluge Failed Alarm! (S40)</button>
+            <button class="btn" onclick="setSim3('S39')" style="border-color: var(--active-token); color: var(--active-token);">&#10004; Deluge Pressure &ge; 50 PSI Established (S39)</button>
+          </div>
+        </div>
+
+        <div class="sfc-canvas">
+          <div class="sfc-flow">
+            <!-- S30_DELUGE_IDLE -->
+            <div class="sfc-step-group">
+              <div class="sfc-step initial step-active" id="c3-S30">
+                <div class="step-id"><span class="token-dot"></span>S30_DELUGE_IDLE</div>
+                <div class="step-name">Deluge System Standby</div>
+                <div class="step-rung">CE_LOG R3, R6 (T00009) &rarr; Protect R3</div>
+              </div>
+              <div class="sfc-connector-h"></div>
+              <div class="sfc-actions">
+                <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PUMP_A_INT (%M00205) := 0; PUMP_B_START_INT (%M00207) := 0;</div></div>
+                <div class="action-row"><div class="qual qual-L">L 2.0s</div><div class="act-body">PUMP_B_STOP_INT (%M00206) := 1 &rarr; Drives PUMP_B_STOP (%Q00006)<span class="act-cmt">2.0s stop pulse via Pump_Timer8 (T00009) when fire/foam clear, or continuous while FS_7503_001_ALI = 1</span></div></div>
+                <div class="action-row"><div class="qual qual-R">R</div><div class="act-body">RESET 1-Hour Counter (%R00226 := 0) &amp; Pump_Timer1..7</div></div>
+              </div>
+            </div>
+
+            <div class="sfc-vline"></div>
+            <div class="sfc-transition">
+              <div class="trans-id">T30_FireOrFoam</div>
+              <div class="trans-bar"></div>
+              <div class="trans-cond">(DF_7404_001_ALHI OR DF_7404_002_ALHI OR FR_7503_001_002_ALHI OR FR_7503_003_ALHI) AND NOT FS_7503_001_ALI AND NOT System_Reset AND NOT Pump_Active_1_Hour</div>
+            </div>
+            <div class="sfc-vline"></div>
+
+            <!-- Parallel Split: Branch A (Pump A + 1 Hr Counter) & Branch B (Pump B Escalation) -->
+            <div class="sfc-parallel-bar"></div>
+
+            <div class="sfc-columns">
+              <!-- Left Column: Duty Electric Pump A + 3600s Counter -->
+              <div class="sfc-col" style="max-width: 380px;">
+                <div class="sfc-vline"></div>
+                <div class="sfc-step" id="c3-S31">
+                  <div class="step-id"><span class="token-dot"></span>S31_DUTY_PUMP_A_ON</div>
+                  <div class="step-name">Electric Pump A Running (Max 1 Hr)</div>
+                  <div class="step-rung">CE_LOG R3..R4 &rarr; Protect R1</div>
+                </div>
+                <div class="sfc-actions" style="margin-top: 8px; min-width: 320px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PUMP_A_INT (%M00205) := 1;<span class="act-cmt">Drives %Q0005 if NOT INHIBIT_FOAM_REL_ALI AND NOT INHIBIT_ALL_OUTPUTS_ALI</span></div></div>
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">COUNT_UP(%R00226, Clock := #T_SEC, PV := 3600);<span class="act-cmt">At 3600s (60 min) &rarr; Pump_Active_1_Hour (%M00621) := 1</span></div></div>
+                </div>
+              </div>
+
+              <!-- Right Column: Standby Diesel Pump B Escalation State Machine -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+
+                <!-- S32 -->
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c3-S32">
+                    <div class="step-id"><span class="token-dot"></span>S32_WAIT_PRESS_30S</div>
+                    <div class="step-name">Wait 30.0s for Deluge Pressure</div>
+                    <div class="step-rung">CE_LOG R5 (Pump_Timer1 / T00003)</div>
+                  </div>
+                  <div class="sfc-connector-h"></div>
+                  <div class="sfc-actions">
+                    <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">ONDTR(Pump_Timer1, PV := 30.0s) &rarr; T00003;<span class="act-cmt">If PST_7503_001_ALHI (&ge; 50 PSI) turns ON at any step &rarr; Jump to S39_PRESS_OK</span></div></div>
+                  </div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T32</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00003 (30.0s) AND NOT PST_7503_001_ALHI</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <!-- S33 -->
+                <div class="sfc-step-group">
+                  <div class="sfc-step step-trip" id="c3-S33">
+                    <div class="step-id"><span class="token-dot"></span>S33_PUMP_B_PULSE_1</div>
+                    <div class="step-name">Pump B Start Attempt #1 (30..32s)</div>
+                    <div class="step-rung">CE_LOG R5 (T00003 &amp; NOT T00004)</div>
+                  </div>
+                  <div class="sfc-connector-h"></div>
+                  <div class="sfc-actions">
+                    <div class="action-row"><div class="qual qual-L">L 2.0s</div><div class="act-body">PUMP_B_START_INT (%M00207) := 1 &rarr; %Q00007;<span class="act-cmt">Timed by Pump_Timer2 (PV := 2.0s &rarr; T00004)</span></div></div>
+                  </div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T33</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00004 (2.0s) AND NOT PST_7503_001_ALHI</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <!-- S34 -->
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c3-S34">
+                    <div class="step-id"><span class="token-dot"></span>S34_WAIT_RETRY1_60S</div>
+                    <div class="step-name">Wait 60.0s After Attempt #1 (32..92s)</div>
+                    <div class="step-rung">CE_LOG R5 (Pump_Timer3 / T00005)</div>
+                  </div>
+                  <div class="sfc-connector-h"></div>
+                  <div class="sfc-actions">
+                    <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PUMP_B_START_INT := 0; ONDTR(Pump_Timer3, PV := 60.0s) &rarr; T00005;</div></div>
+                  </div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T34</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00005 (60.0s) AND NOT PST_7503_001_ALHI</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <!-- S35 -->
+                <div class="sfc-step-group">
+                  <div class="sfc-step step-trip" id="c3-S35">
+                    <div class="step-id"><span class="token-dot"></span>S35_PUMP_B_PULSE_2</div>
+                    <div class="step-name">Pump B Start Attempt #2 (92..94s)</div>
+                    <div class="step-rung">CE_LOG R5 (T00005 &amp; NOT T00006)</div>
+                  </div>
+                  <div class="sfc-connector-h"></div>
+                  <div class="sfc-actions">
+                    <div class="action-row"><div class="qual qual-L">L 2.0s</div><div class="act-body">PUMP_B_START_INT (%M00207) := 1 &rarr; %Q00007;<span class="act-cmt">Timed by Pump_Timer4 (PV := 2.0s &rarr; T00006)</span></div></div>
+                  </div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T35</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00006 (2.0s) AND NOT PST_7503_001_ALHI</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <!-- S36 -->
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c3-S36">
+                    <div class="step-id"><span class="token-dot"></span>S36_WAIT_RETRY2_60S</div>
+                    <div class="step-name">Wait 60.0s After Attempt #2 (94..154s)</div>
+                    <div class="step-rung">CE_LOG R5 (Pump_Timer5 / T00007)</div>
+                  </div>
+                  <div class="sfc-connector-h"></div>
+                  <div class="sfc-actions">
+                    <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PUMP_B_START_INT := 0; ONDTR(Pump_Timer5, PV := 60.0s) &rarr; T00007;</div></div>
+                  </div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T36</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00007 (60.0s) AND NOT PST_7503_001_ALHI</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <!-- S37 -->
+                <div class="sfc-step-group">
+                  <div class="sfc-step step-trip" id="c3-S37">
+                    <div class="step-id"><span class="token-dot"></span>S37_PUMP_B_PULSE_3</div>
+                    <div class="step-name">Pump B Start Attempt #3 (154..156s)</div>
+                    <div class="step-rung">CE_LOG R5 (T00007 &amp; NOT T00008)</div>
+                  </div>
+                  <div class="sfc-connector-h"></div>
+                  <div class="sfc-actions">
+                    <div class="action-row"><div class="qual qual-L">L 2.0s</div><div class="act-body">PUMP_B_START_INT (%M00207) := 1 &rarr; %Q00007;<span class="act-cmt">Timed by Pump_Timer6 (PV := 2.0s &rarr; T00008)</span></div></div>
+                  </div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T37</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00008 (2.0s) AND NOT PST_7503_001_ALHI</div>
+                </div>
+                <div class="sfc-vline"></div>
+
+                <!-- S38 -->
+                <div class="sfc-step-group">
+                  <div class="sfc-step" id="c3-S38">
+                    <div class="step-id"><span class="token-dot"></span>S38_WAIT_FINAL_60S</div>
+                    <div class="step-name">Final 60.0s Pressure Watchdog (156..216s)</div>
+                    <div class="step-rung">CE_LOG R7 (Pump_Timer7)</div>
+                  </div>
+                  <div class="sfc-connector-h"></div>
+                  <div class="sfc-actions">
+                    <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PUMP_B_START_INT := 0; ONDTR(Pump_Timer7, PV := 60.0s);</div></div>
+                  </div>
+                </div>
+
+                <div class="sfc-vline"></div>
+                <div class="sfc-alt-bar"></div>
+
+                <div class="sfc-columns">
+                  <div class="sfc-col">
+                    <div class="sfc-vline"></div>
+                    <div class="sfc-transition">
+                      <div class="trans-id">T38_Fail</div>
+                      <div class="trans-bar"></div>
+                      <div class="trans-cond">Pump_Timer7 (60.0s) &amp; NOT PST_7503_001_ALHI</div>
+                    </div>
+                    <div class="sfc-vline"></div>
+                    <div class="sfc-step step-trip" id="c3-S40">
+                      <div class="step-id"><span class="token-dot"></span>S40_DELUGE_FAILED</div>
+                      <div class="step-name">Deluge Failed To Release Alarm</div>
+                      <div class="step-rung">CE_LOG R7 (%M00620) &rarr; Sound R30</div>
+                    </div>
+                    <div class="sfc-actions" style="margin-top:6px; min-width:250px;">
+                      <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">DelugeFailedToRelease (%M00620) := 1;<span class="act-cmt">Triggers System_Sound30 &amp; HMI Alarm</span></div></div>
+                    </div>
+                  </div>
+
+                  <div class="sfc-col">
+                    <div class="sfc-vline"></div>
+                    <div class="sfc-transition">
+                      <div class="trans-id">T39_PressOK</div>
+                      <div class="trans-bar"></div>
+                      <div class="trans-cond">PST_7503_001_ALHI (&ge; 50 PSI) [From S32..S40]</div>
+                    </div>
+                    <div class="sfc-vline"></div>
+                    <div class="sfc-step" id="c3-S39">
+                      <div class="step-id"><span class="token-dot"></span>S39_PRESS_OK</div>
+                      <div class="step-name">Deluge Line Pressure Established</div>
+                      <div class="step-rung">CE_LOG R5, R7 Reset Input</div>
+                    </div>
+                    <div class="sfc-actions" style="margin-top:6px; min-width:250px;">
+                      <div class="action-row"><div class="qual qual-R">R</div><div class="act-body">RESET Pump_Timer1..7 (T00003..T00008 := 0);<span class="act-cmt">DelugeFailedToRelease := 0; Pump B start sequence halted</span></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sfc-parallel-bar"></div>
+            <div class="sfc-vline"></div>
+            <div class="sfc-transition">
+              <div class="trans-id">T40_StopOrReset</div>
+              <div class="trans-bar"></div>
+              <div class="trans-cond">FS_7503_001_ALI (Stop Foam PB) OR System_Reset (%M00700) OR Pump_Active_1_Hour (%M00621 &ge; 3600s) &rarr; S30_DELUGE_IDLE</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>IEC 61131-3 Textual SFC — Chart 03 (SFC_03_Deluge_Sequence)</span>
+            <button class="btn" onclick="copyPre(this)">Copy IEC SFC</button>
+          </div>
+          <pre class="iec-code">INITIAL_STEP S30_DELUGE_IDLE:
+    PUMP_A_INT(R);
+    PUMP_B_START_INT(R);
+    PUMP_B_STOP_INT(L, T#2s);          (* 2.0s Stop Pulse via Pump_Timer8 / T00009 *)
+    A_Reset_HourCounter_And_Timers(R);
+END_STEP
+
+TRANSITION T30_FireOrFoamDemand FROM S30_DELUGE_IDLE TO (S31_DUTY_PUMP_A_ON, S32_WAIT_PRESS_30S)
+    := (DF_7404_001_ALHI OR DF_7404_002_ALHI OR FR_7503_001_002_ALHI OR FR_7503_003_ALHI)
+       AND NOT FS_7503_001_ALI AND NOT System_Reset AND NOT Pump_Active_1_Hour;
+END_TRANSITION
+
+(* --- Parallel Branch A: Duty Electric Pump A & 1-Hour Runtime Counter --- *)
+STEP S31_DUTY_PUMP_A_ON:
+    PUMP_A_INT(N);                     (* Drives %Q0005 if NOT Inhibited *)
+    A_Count_1Hour_Runtime(N);          (* UPCTR %R00226 on #T_SEC, PV = 3600 -> Pump_Active_1_Hour *)
+END_STEP
+
+(* --- Parallel Branch B: Standby Diesel Pump B 3-Attempt Escalation --- *)
+STEP S32_WAIT_PRESS_30S:
+    A_Timer1_30s(N);                   (* Pump_Timer1 PV=30.0s -> T00003 *)
+END_STEP
+
+TRANSITION T32_NoPress30s FROM S32_WAIT_PRESS_30S TO S33_PUMP_B_PULSE_1
+    := (S32_WAIT_PRESS_30S.t &gt;= T#30s) AND NOT PST_7503_001_ALHI;
+END_TRANSITION
+
+STEP S33_PUMP_B_PULSE_1:
+    PUMP_B_START_INT(N);               (* Attempt #1: 2.0s Start Pulse [t = 30..32s] *)
+END_STEP
+
+TRANSITION T33_Pulse1Done FROM S33_PUMP_B_PULSE_1 TO S34_WAIT_RETRY1_60S
+    := (S33_PUMP_B_PULSE_1.t &gt;= T#2s) AND NOT PST_7503_001_ALHI;
+END_TRANSITION
+
+STEP S34_WAIT_RETRY1_60S:
+    A_Timer3_60s(N);                   (* Wait 60.0s [t = 32..92s] -> T00005 *)
+END_STEP
+
+TRANSITION T34_NoPress92s FROM S34_WAIT_RETRY1_60S TO S35_PUMP_B_PULSE_2
+    := (S34_WAIT_RETRY1_60S.t &gt;= T#60s) AND NOT PST_7503_001_ALHI;
+END_TRANSITION
+
+STEP S35_PUMP_B_PULSE_2:
+    PUMP_B_START_INT(N);               (* Attempt #2: 2.0s Start Pulse [t = 92..94s] *)
+END_STEP
+
+TRANSITION T35_Pulse2Done FROM S35_PUMP_B_PULSE_2 TO S36_WAIT_RETRY2_60S
+    := (S35_PUMP_B_PULSE_2.t &gt;= T#2s) AND NOT PST_7503_001_ALHI;
+END_TRANSITION
+
+STEP S36_WAIT_RETRY2_60S:
+    A_Timer5_60s(N);                   (* Wait 60.0s [t = 94..154s] -> T00007 *)
+END_STEP
+
+TRANSITION T36_NoPress154s FROM S36_WAIT_RETRY2_60S TO S37_PUMP_B_PULSE_3
+    := (S36_WAIT_RETRY2_60S.t &gt;= T#60s) AND NOT PST_7503_001_ALHI;
+END_TRANSITION
+
+STEP S37_PUMP_B_PULSE_3:
+    PUMP_B_START_INT(N);               (* Attempt #3: 2.0s Start Pulse [t = 154..156s] *)
+END_STEP
+
+TRANSITION T37_Pulse3Done FROM S37_PUMP_B_PULSE_3 TO S38_WAIT_FINAL_60S
+    := (S37_PUMP_B_PULSE_3.t &gt;= T#2s) AND NOT PST_7503_001_ALHI;
+END_TRANSITION
+
+STEP S38_WAIT_FINAL_60S:
+    A_Timer7_60s(N);                   (* Final 60.0s Watchdog [t = 156..216s] *)
+END_STEP
+
+TRANSITION T38_DelugeFailed FROM S38_WAIT_FINAL_60S TO S40_DELUGE_FAILED
+    := (S38_WAIT_FINAL_60S.t &gt;= T#60s) AND NOT PST_7503_001_ALHI;
+END_TRANSITION
+
+STEP S40_DELUGE_FAILED:
+    DelugeFailedToRelease(N);          (* %M00620 := TRUE -> Triggers System_Sound30 *)
+END_STEP
+
+(* Immediate Transition from any escalation step S32..S40 when Deluge Pressure >= 50 PSI *)
+TRANSITION T39_PressureEstablished FROM (S32_WAIT_PRESS_30S, S33_PUMP_B_PULSE_1, S34_WAIT_RETRY1_60S,
+                                         S35_PUMP_B_PULSE_2, S36_WAIT_RETRY2_60S, S37_PUMP_B_PULSE_3,
+                                         S38_WAIT_FINAL_60S, S40_DELUGE_FAILED) TO S39_PRESS_OK
+    := PST_7503_001_ALHI;
+END_TRANSITION
+
+STEP S39_PRESS_OK:
+    A_Reset_Escalation_Timers(R);      (* Holds Pump_Timer1..7 reset while pressure >= 50 PSI *)
+END_STEP
+
+TRANSITION T40_StopOrReset FROM (S31_DUTY_PUMP_A_ON, S39_PRESS_OK, S40_DELUGE_FAILED) TO S30_DELUGE_IDLE
+    := FS_7503_001_ALI OR System_Reset OR Pump_Active_1_Hour;
+END_TRANSITION</pre>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SFC CHART 4: EMERGENCY SHUTDOWN (ESD) & FUEL GAS ISOLATION             -->
+      <!-- ===================================================================== -->
+      <section class="card" id="sfc-04">
+        <div class="card-header">
+          <div>
+            <div class="chart-tag">SFC Chart 04 — Emergency Shutdown (ESD) &amp; Fail-Safe Relay Control</div>
+            <h2 class="card-title">SFC_04_ESD_Shutdown (<code>CE_LOG</code> Rungs 1..2, 9..11, <code>Shutdow</code> Rungs 1..4, <code>Indicat</code>)</h2>
+          </div>
+          <div class="meta-pills">
+            <span class="meta-pill">Fail-Safe Polarity: <strong>1 = Energized (Healthy), 0 = De-Energized (Trip)</strong></span>
+            <span class="meta-pill">Relays: <strong>%Q0001 (ESDV), %Q0008 (Main Pumps), %Q0003 (Oil Boosters), %Q0004 (Water Boosters)</strong></span>
+          </div>
+        </div>
+
+        <div class="sfc-canvas">
+          <div class="sfc-flow">
+            <div class="sfc-step-group">
+              <div class="sfc-step initial step-active">
+                <div class="step-id"><span class="token-dot"></span>S40_PLANT_HEALTHY</div>
+                <div class="step-name">All Shutdown Relays Energized (1)</div>
+                <div class="step-rung">CE_LOG R1..R2 = 0 &rarr; Shutdow R1..R4</div>
+              </div>
+              <div class="sfc-connector-h"></div>
+              <div class="sfc-actions">
+                <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">EY_6401_001_002 (%Q0001) := 1; <span class="act-cmt">Fuel Gas ESD Solenoid Energized (Valve Open)</span></div></div>
+                <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PumpShutdown (%Q0008) := 1; P2100_P2200 (%Q0003) := 1; P3600_P3700 (%Q0004) := 1; <span class="act-cmt">Negated Coils -( / )- keep relays energized when _INT = 0 and _MT = 0</span></div></div>
+              </div>
+            </div>
+
+            <div class="sfc-vline"></div>
+            <div class="sfc-alt-bar"></div>
+
+            <div class="sfc-columns">
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T41_FullESD</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">(Voting_DG_7404_ALHI OR DG_7404_011R_ALHI OR DF_001/002_ALHI OR FR_001_002/003_ALHI OR PST_6401_001_ALHI) AND NOT INHIBIT_ALL_OUTPUTS_ALI</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S41_FULL_ESD_TRIP</div>
+                  <div class="step-name">Fuel Gas ESDV + All Pumps Tripped</div>
+                  <div class="step-rung">CE_LOG R1 &amp; R2 &rarr; Shutdow R1..R4</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:300px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">EY_6401_001_002 (%Q0001) := 0;<span class="act-cmt">De-energizes solenoid to close Fuel Gas ESDV</span></div></div>
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PumpShutdown (%Q0008) := 0; P2100_P2200 (%Q0003) := 0; P3600_P3700 (%Q0004) := 0;</div></div>
+                </div>
+              </div>
+
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T42_PumpESD</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">(ZSL_6401_001_ALI [ESDV Closed] OR ESDV_6401_001_ALI [ESD PB]) AND NOT INHIBIT_ALL_OUTPUTS_ALI</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S42_PUMPS_ONLY_TRIP</div>
+                  <div class="step-name">All Main &amp; Booster Pumps Tripped</div>
+                  <div class="step-rung">CE_LOG R1 &rarr; Shutdow R2..R4</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:300px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PumpShutdown (%Q0008) := 0; P2100_P2200 (%Q0003) := 0; P3600_P3700 (%Q0004) := 0;</div></div>
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">Tag_DO_13 (%Q0013) := ZSL_6401_001_ALI;<span class="act-cmt">Illuminate ESDV Closed Panel Lamp</span></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sfc-alt-bar"></div>
+            <div class="sfc-vline"></div>
+            <div class="sfc-transition">
+              <div class="trans-id">T43_Cleared</div>
+              <div class="trans-bar"></div>
+              <div class="trans-cond">System_Reset (%M00700) AND NOT Any_Trip_Demand OR INHIBIT_ALL_OUTPUTS_ALI &rarr; S40_PLANT_HEALTHY</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>IEC 61131-3 Textual SFC — Chart 04 (SFC_04_ESD_Shutdown)</span>
+            <button class="btn" onclick="copyPre(this)">Copy IEC SFC</button>
+          </div>
+          <pre class="iec-code">INITIAL_STEP S40_PLANT_HEALTHY:
+    EY_6401_001_002(N);                (* %Q0001 := 1 [Energized = Fuel Gas ESDV Open] *)
+    PumpShutdown(N);                   (* %Q0008 := 1 [Energized = Main Pumps Permissive ON] *)
+    P2100_P2200(N);                    (* %Q0003 := 1 [Energized = Oil Booster Pumps Permissive ON] *)
+    P3600_P3700(N);                    (* %Q0004 := 1 [Energized = Water Booster Pumps Permissive ON] *)
+END_STEP
+
+TRANSITION T41_FullESD FROM S40_PLANT_HEALTHY TO S41_FULL_ESD_TRIP
+    := (Voting_DG_7404_ALHI OR DG_7404_011R_ALHI OR DF_7404_001_ALHI OR DF_7404_002_ALHI
+        OR FR_7503_001_002_ALHI OR FR_7503_003_ALHI OR PST_6401_001_ALHI)
+       AND NOT INHIBIT_ALL_OUTPUTS_ALI;
+END_TRANSITION
+
+STEP S41_FULL_ESD_TRIP:
+    EY_6401_001_002(R);                (* %Q0001 := 0 [De-energize solenoid to close Fuel Gas ESDV] *)
+    PumpShutdown(R);                   (* %Q0008 := 0 [De-energize Main Pump Shutdown Relay] *)
+    P2100_P2200(R);                    (* %Q0003 := 0 [De-energize Oil Booster Pump Shutdown Relay] *)
+    P3600_P3700(R);                    (* %Q0004 := 0 [De-energize Water Booster Pump Shutdown Relay] *)
+END_STEP
+
+TRANSITION T42_PumpESD FROM S40_PLANT_HEALTHY TO S42_PUMPS_ONLY_TRIP
+    := (ZSL_6401_001_ALI OR ESDV_6401_001_ALI) AND NOT INHIBIT_ALL_OUTPUTS_ALI;
+END_TRANSITION
+
+STEP S42_PUMPS_ONLY_TRIP:
+    PumpShutdown(R);                   (* %Q0008 := 0 *)
+    P2100_P2200(R);                    (* %Q0003 := 0 *)
+    P3600_P3700(R);                    (* %Q0004 := 0 *)
+    Tag_DO_13(N);                      (* %Q0013 := ZSL_6401_001_ALI [ESDV Closed Lamp] *)
+END_STEP
+
+TRANSITION T43_Cleared FROM (S41_FULL_ESD_TRIP, S42_PUMPS_ONLY_TRIP) TO S40_PLANT_HEALTHY
+    := (System_Reset AND NOT P2100_P2200_INT) OR INHIBIT_ALL_OUTPUTS_ALI;
+END_TRANSITION</pre>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SFC CHART 5: AUDIBLE ALARM ANNUNCIATION, MUTE & RE-TRIGGER             -->
+      <!-- ===================================================================== -->
+      <section class="card" id="sfc-05">
+        <div class="card-header">
+          <div>
+            <div class="chart-tag">SFC Chart 05 — Audible Alarm Annunciation, Silence (Mute) &amp; New-Alarm Re-Trigger</div>
+            <h2 class="card-title">SFC_05_Sound_Annunciation (<code>Sound</code> Rungs 1..50, <code>Loc_Al</code> Rungs 1..3)</h2>
+          </div>
+          <div class="meta-pills">
+            <span class="meta-pill">One-Shots: <strong>38 POSCOIL bits (System_Sound01..37, 40)</strong></span>
+            <span class="meta-pill">Outputs: <strong>%Q0002 (Pump House Bell), %Q0015 (PCR Buzzer), %Q0016 (1Hz PLC Fault)</strong></span>
+          </div>
+        </div>
+
+        <div class="sfc-canvas">
+          <div class="sfc-flow">
+            <div class="sfc-step-group">
+              <div class="sfc-step initial step-active">
+                <div class="step-id"><span class="token-dot"></span>S50_SOUND_QUIET</div>
+                <div class="step-name">All Audible Sounders Silenced</div>
+                <div class="step-rung">Init R1 / Sound R46..R48</div>
+              </div>
+              <div class="sfc-connector-h"></div>
+              <div class="sfc-actions">
+                <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">SA_7404_001_002 (%Q0002) := 0; Tag_DO_15 (%Q0015) := 0; PLC_Fault (%Q0016) := 0;</div></div>
+              </div>
+            </div>
+
+            <div class="sfc-vline"></div>
+            <div class="sfc-alt-bar"></div>
+
+            <div class="sfc-columns">
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T50A</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">ANY Rising Edge System_Sound01..26</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S51_BELL_AND_BUZZER</div>
+                  <div class="step-name">Pump House Bell + PCR Buzzer ON</div>
+                  <div class="step-rung">Sound R39..R44 &rarr; Loc_Al R1..R2</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:250px;">
+                  <div class="action-row"><div class="qual qual-S">S</div><div class="act-body">Tag_DO_15_INT (%M00215) := 1 &rarr; %Q0015;</div></div>
+                  <div class="action-row"><div class="qual qual-S">S</div><div class="act-body">SA_7404_001_002_INT (%M00202) := 1 &rarr; %Q0002;</div></div>
+                </div>
+              </div>
+
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T50B</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">ANY Rising Edge System_Sound27..31</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S52_PCR_BUZZER_ONLY</div>
+                  <div class="step-name">PCR Control Room Buzzer ON</div>
+                  <div class="step-rung">Sound R41 &rarr; Loc_Al R2</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:250px;">
+                  <div class="action-row"><div class="qual qual-S">S</div><div class="act-body">Tag_DO_15_INT (%M00215) := 1 &rarr; %Q0015;<span class="act-cmt">Output Inhibit, Deluge Fail, or 1-Hr Cutoff</span></div></div>
+                </div>
+              </div>
+
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T50C</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">ANY Rising Edge System_Sound32..37, 40</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S53_PLC_FAULT_PULSED</div>
+                  <div class="step-name">1Hz Pulsed Fault Sounder ON</div>
+                  <div class="step-rung">Sound R45 &rarr; Loc_Al R3</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:250px;">
+                  <div class="action-row"><div class="qual qual-S">S</div><div class="act-body">PLC_Fault_INT (%M00216) := 1;<span class="act-cmt">%Q0016 := PLC_Fault_INT AND NOT Tag_DO_15 AND #T_SEC</span></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sfc-alt-bar"></div>
+            <div class="sfc-vline"></div>
+            <div class="sfc-transition">
+              <div class="trans-id">T51_MuteOrReset</div>
+              <div class="trans-bar"></div>
+              <div class="trans-cond">System_Mute (%M00706) OR System_Reset (%M00700)</div>
+            </div>
+            <div class="sfc-vline"></div>
+
+            <div class="sfc-step-group">
+              <div class="sfc-step">
+                <div class="step-id"><span class="token-dot"></span>S54_MUTED_READY</div>
+                <div class="step-name">Unlatch Sounders &amp; Clear Mute Bit</div>
+                <div class="step-rung">Sound R46..R50</div>
+              </div>
+              <div class="sfc-connector-h"></div>
+              <div class="sfc-actions">
+                <div class="action-row"><div class="qual qual-R">R</div><div class="act-body">UNLATCH Tag_DO_15_INT := 0; SA_7404_001_002_INT := 0; PLC_Fault_INT := 0;</div></div>
+                <div class="action-row"><div class="qual qual-R">R</div><div class="act-body">UNLATCH System_Mute (%M00706) := 0 &rarr; Returns immediately to S50_SOUND_QUIET (ready for next POSCOIL edge)</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>IEC 61131-3 Textual SFC — Chart 05 (SFC_05_Sound_Annunciation)</span>
+            <button class="btn" onclick="copyPre(this)">Copy IEC SFC</button>
+          </div>
+          <pre class="iec-code">INITIAL_STEP S50_SOUND_QUIET:
+    SA_7404_001_002_INT(R);            (* %M00202 := 0 -> %Q0002 Pump House Horn OFF *)
+    Tag_DO_15_INT(R);                  (* %M00215 := 0 -> %Q0015 PCR Panel Buzzer OFF *)
+    PLC_Fault_INT(R);                  (* %M00216 := 0 -> %Q0016 Pulsed Fault Buzzer OFF *)
+END_STEP
+
+TRANSITION T50A_BellAndBuzzer FROM S50_SOUND_QUIET TO S51_BELL_AND_BUZZER
+    := ANY_RISING_EDGE(System_Sound01 .. System_Sound26);
+END_TRANSITION
+
+STEP S51_BELL_AND_BUZZER:
+    Tag_DO_15_INT(S);                  (* Latch PCR Panel Buzzer %Q0015 *)
+    SA_7404_001_002_INT(S);            (* Latch Pump House Local Horn %Q0002 *)
+END_STEP
+
+TRANSITION T50B_PcrBuzzerOnly FROM S50_SOUND_QUIET TO S52_PCR_BUZZER_ONLY
+    := ANY_RISING_EDGE(System_Sound27 .. System_Sound31);
+END_TRANSITION
+
+STEP S52_PCR_BUZZER_ONLY:
+    Tag_DO_15_INT(S);                  (* Latch PCR Panel Buzzer %Q0015 Only *)
+END_STEP
+
+TRANSITION T50C_PlcFaultSound FROM S50_SOUND_QUIET TO S53_PLC_FAULT_PULSED
+    := ANY_RISING_EDGE(System_Sound32 .. System_Sound37, System_Sound40);
+END_TRANSITION
+
+STEP S53_PLC_FAULT_PULSED:
+    PLC_Fault_INT(S);                  (* %Q0016 := PLC_Fault_INT AND NOT Tag_DO_15 AND #T_SEC *)
+END_STEP
+
+TRANSITION T51_MuteOrReset FROM (S51_BELL_AND_BUZZER, S52_PCR_BUZZER_ONLY, S53_PLC_FAULT_PULSED) TO S54_MUTED_READY
+    := System_Mute OR System_Reset;
+END_TRANSITION
+
+STEP S54_MUTED_READY:
+    Tag_DO_15_INT(R);
+    SA_7404_001_002_INT(R);
+    PLC_Fault_INT(R);
+    System_Mute(R);                    (* Sound Rung 50: Self-resetting HMI Mute bit *)
+END_STEP
+
+TRANSITION T52_Rearm FROM S54_MUTED_READY TO S50_SOUND_QUIET
+    := NOT System_Mute;
+END_TRANSITION</pre>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SFC CHART 6: DELUGE COIL CONTINUITY LINE SUPERVISION                   -->
+      <!-- ===================================================================== -->
+      <section class="card" id="sfc-06">
+        <div class="card-header">
+          <div>
+            <div class="chart-tag">SFC Chart 06 — Deluge Output Coil Open-Circuit Line Supervision</div>
+            <h2 class="card-title">SFC_06_Line_Monitoring (<code>Protect</code> Rungs 4..7, <code>FLT_1</code> Rungs 4..5)</h2>
+          </div>
+          <div class="meta-pills">
+            <span class="meta-pill">Test Pulse: <strong>2.0s pulse every 60s (#T_MIN + 28.0s delay T00013/T00014)</strong></span>
+            <span class="meta-pill">Watchdog Timeout: <strong>70.0s (Pump_Timer12 / Pump_Timer13 &rarr; PUMP_A_OC / PUMP_B_START_OC)</strong></span>
+          </div>
+        </div>
+
+        <div class="sfc-canvas">
+          <div class="sfc-flow">
+            <div class="sfc-parallel-bar"></div>
+            <div class="sfc-columns">
+              <!-- Branch A: 1-Minute Pulse Generator -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-step initial step-active">
+                  <div class="step-id"><span class="token-dot"></span>S60_MIN_LOW_30S</div>
+                  <div class="step-name">#T_MIN Low Half-Cycle (0..30s)</div>
+                  <div class="step-rung">Protect R4, R6 (Reset Timers)</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T60</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00002 AND #T_MIN (%S00006 == 1)</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step">
+                  <div class="step-id"><span class="token-dot"></span>S61_DELAY_28S</div>
+                  <div class="step-name">#T_MIN High Delay (30..58s)</div>
+                  <div class="step-rung">Pump_Timer11 / Pump_Timer10 (PV=28.0s)</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T61</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">T00013 / T00014 == 1 (28.0s elapsed)</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step">
+                  <div class="step-id"><span class="token-dot"></span>S62_PULSE_OUT_2S</div>
+                  <div class="step-name">2.0s Line Test Pulse (58..60s)</div>
+                  <div class="step-rung">Protect R4, R6 &rarr; FLT_1 R4, R5</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:280px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">Pump_A_PulsOut (%Q0009) := 1;<br/>Pump_B_Start_PulsOut (%Q0010) := 1;</div></div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T62</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">NOT #T_MIN &rarr; S60_MIN_LOW_30S</div>
+                </div>
+              </div>
+
+              <!-- Branch B: 70s Feedback Watchdog -->
+              <div class="sfc-col">
+                <div class="sfc-vline"></div>
+                <div class="sfc-step initial step-active">
+                  <div class="step-id"><span class="token-dot"></span>S65_WATCHDOG_70S</div>
+                  <div class="step-name">Monitor PulsIn Feedback (%I0006 / %I0007)</div>
+                  <div class="step-rung">Protect R5, R7 (Pump_Timer12 / 13, PV=70.0s)</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:300px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">Run 70.0s ONDTR Watchdog while T00002 = 1;<span class="act-cmt">Every 2s pulse received on Pump_A_PulsIn_ALI (%M00057) or Pump_B_Start_PulsIn_ALI (%M00058) resets timer to 0.0s!</span></div></div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T65_Timeout</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">Watchdog &ge; 70.0s (Missing Pulse / Broken Wire)</div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-step step-trip">
+                  <div class="step-id"><span class="token-dot"></span>S66_COIL_OPEN_CIRCUIT</div>
+                  <div class="step-name">Pump Start Coil Wire-Break Alarm</div>
+                  <div class="step-rung">Protect R5, R7 &rarr; Vote_1 R4</div>
+                </div>
+                <div class="sfc-actions" style="margin-top:6px; min-width:300px;">
+                  <div class="action-row"><div class="qual qual-N">N</div><div class="act-body">PUMP_A_OC (%M00293) := 1; (or PUMP_B_START_OC %M00295 := 1)<span class="act-cmt">Triggers Voting_All_Faults (%M00608) &amp; System_Sound04</span></div></div>
+                </div>
+                <div class="sfc-vline"></div>
+                <div class="sfc-transition">
+                  <div class="trans-id">T66_Restored</div>
+                  <div class="trans-bar"></div>
+                  <div class="trans-cond">PulsIn_ALI == 1 &rarr; Resets Watchdog &rarr; S65_WATCHDOG_70S</div>
+                </div>
+              </div>
+            </div>
+            <div class="sfc-parallel-bar"></div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>IEC 61131-3 Textual SFC — Chart 06 (SFC_06_Line_Monitoring)</span>
+            <button class="btn" onclick="copyPre(this)">Copy IEC SFC</button>
+          </div>
+          <pre class="iec-code">(* --- Parallel Branch A: 1-Minute Line-Check Pulse Generator (2.0s Pulse Every 60s) --- *)
+INITIAL_STEP S60_MIN_LOW_30S:
+    Pump_Timer11(R);                   (* Reset 28.0s delay timer during #T_MIN = 0 half-cycle *)
+    Pump_Timer10(R);
+END_STEP
+
+TRANSITION T60_MinRising FROM S60_MIN_LOW_30S TO S61_DELAY_28S
+    := T00002 AND #T_MIN;
+END_TRANSITION
+
+STEP S61_DELAY_28S:
+    A_Run_28s_Timers(N);               (* ONDTR Pump_Timer11 & Pump_Timer10 PV = 28.0s *)
+END_STEP
+
+TRANSITION T61_28sElapsed FROM S61_DELAY_28S TO S62_PULSE_OUT_2S
+    := T00013 AND T00014;
+END_TRANSITION
+
+STEP S62_PULSE_OUT_2S:
+    Pump_A_PulsOut(N);                 (* %Q0009 := 1 for final 2.0s of 60s cycle [58..60s] *)
+    Pump_B_Start_PulsOut(N);           (* %Q0010 := 1 for final 2.0s of 60s cycle [58..60s] *)
+END_STEP
+
+TRANSITION T62_MinFalling FROM S62_PULSE_OUT_2S TO S60_MIN_LOW_30S
+    := NOT #T_MIN;
+END_TRANSITION
+
+(* --- Parallel Branch B: 70.0s Continuity Feedback Watchdog (%I0006 & %I0007) --- *)
+INITIAL_STEP S65_WATCHDOG_70S:
+    A_Run_70s_Watchdog(N);             (* ONDTR Pump_Timer12 & Pump_Timer13 PV = 70.0s, Reset on PulsIn_ALI *)
+END_STEP
+
+TRANSITION T65_Timeout70s FROM S65_WATCHDOG_70S TO S66_COIL_OPEN_CIRCUIT
+    := (S65_WATCHDOG_70S.t &gt;= T#70s) AND NOT PulsIn_ALI;
+END_TRANSITION
+
+STEP S66_COIL_OPEN_CIRCUIT:
+    PUMP_A_OC(N);                      (* %M00293 := 1 [or PUMP_B_START_OC %M00295 := 1] -> Voting_All_Faults *)
+END_STEP
+
+TRANSITION T66_Restored FROM S66_COIL_OPEN_CIRCUIT TO S65_WATCHDOG_70S
+    := PulsIn_ALI;
+END_TRANSITION</pre>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TRACEABILITY TABLE: ALL 24 LADDER ROUTINES TO SFC CHARTS & STEPS      -->
+      <!-- ===================================================================== -->
+      <section class="card" id="traceability">
+        <div class="card-header">
+          <div>
+            <div class="chart-tag">Complete Cross-Reference</div>
+            <h2 class="card-title">Ladder Routine &amp; Rung to SFC Step/Transition Traceability Matrix</h2>
+          </div>
+        </div>
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>GE Ladder Routine</th>
+              <th>GE Rungs</th>
+              <th>L5X Rungs</th>
+              <th>Target SFC Chart</th>
+              <th>Mapped SFC Steps &amp; Transitions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>_MAIN</code> (MainRoutine)</td><td>1..2</td><td>0..3</td><td>SFC_01_Master_Executive</td><td><code>S0_INIT</code>, <code>T0_FirstScanDone</code>, <code>S1_CYCLIC_IO_SOUND</code></td></tr>
+            <tr><td><code>Init</code></td><td>1..2</td><td>0..2</td><td>SFC_01_Master_Executive</td><td><code>S0_INIT</code> (Actions <code>A_Init_ClearTimers [P]</code>, <code>A_Init_UnlatchSound [R]</code>)</td></tr>
+            <tr><td><code>Input</code></td><td>1</td><td>0..5</td><td>SFC_01_Master_Executive</td><td><code>S1_CYCLIC_IO_SOUND</code> (Action <code>CALL Input()</code>)</td></tr>
+            <tr><td><code>DI_1</code> &amp; <code>DI_2</code></td><td>1..42</td><td>0..35</td><td>SFC_02_Channel_Lifecycle</td><td><code>S20_CH_NORMAL</code>, <code>S22_LO_ALARM</code>, <code>S24_FIRST_UP</code>, <code>T24_Reset</code></td></tr>
+            <tr><td><code>CalcVa1</code>, <code>CalcVa2</code>, <code>CalcVa3</code></td><td>1..2 each</td><td>0..4 each</td><td>SFC_02_Channel_Lifecycle</td><td><code>S20_CH_NORMAL</code> (Analog 0..20mA scaling actions)</td></tr>
+            <tr><td><code>Ai_AL_1</code>, <code>Ai_AL_2</code>, <code>Ai_AL_3</code></td><td>1..7</td><td>0..6</td><td>SFC_02_Channel_Lifecycle</td><td>Transition guards <code>T20_Fault</code>, <code>T21_LoAlm</code>, <code>T22_HiAlm</code></td></tr>
+            <tr><td><code>AI_1</code>, <code>AI_2</code>, <code>AI_3</code></td><td>1..81</td><td>0..74</td><td>SFC_02_Channel_Lifecycle</td><td><code>S20_CH_NORMAL</code> &rarr; <code>S21_LINE_FAULT</code> / <code>S22_LO_ALARM</code> / <code>S23_HI_ALARM</code> &rarr; <code>S24_FIRST_UP</code></td></tr>
+            <tr><td><code>Vote_1</code></td><td>1..4</td><td>0..3</td><td>SFC_02_Channel_Lifecycle</td><td>Aggregates <code>Voting_DG_7404_ALLI</code>, <code>Voting_DG_7404_ALHI</code>, <code>Voting_All_Inhibits</code>, <code>Voting_All_Faults</code></td></tr>
+            <tr><td><code>Logic</code></td><td>1..14</td><td>0..19</td><td>SFC_01_Master_Executive</td><td><code>S10_WARMUP_118S</code> &rarr; <code>T10</code> &rarr; <code>S11_AUTO_RESET_2S</code> &rarr; <code>T11</code> &rarr; <code>S12_CE_ACTIVE</code> + <code>S13_HMI_RESET_5S</code></td></tr>
+            <tr><td><code>CE_LOG</code> (Rungs 1..2, 9..11)</td><td>1..2, 9..11</td><td>0..3, 21..23</td><td>SFC_04_ESD_Shutdown</td><td><code>S40_PLANT_HEALTHY</code> &rarr; <code>T41_FullESD</code> (<code>S41</code>) / <code>T42_PumpESD</code> (<code>S42</code>)</td></tr>
+            <tr><td><code>CE_LOG</code> (Rungs 3..7)</td><td>3..7</td><td>4..20</td><td>SFC_03_Deluge_Sequence</td><td><code>S30_DELUGE_IDLE</code> &rarr; <code>S31_DUTY_PUMP_A_ON</code> || (<code>S32</code>..<code>S38</code> &rarr; <code>S40_DELUGE_FAILED</code> / <code>S39_PRESS_OK</code>)</td></tr>
+            <tr><td><code>Sound</code></td><td>1..50</td><td>0..48</td><td>SFC_05_Sound_Annunciation</td><td><code>S50_SOUND_QUIET</code> &rarr; <code>T50A/B/C</code> &rarr; <code>S51</code>/<code>S52</code>/<code>S53</code> &rarr; <code>T51_MuteOrReset</code> &rarr; <code>S54_MUTED_READY</code></td></tr>
+            <tr><td><code>Output</code></td><td>1..6</td><td>0..4</td><td>SFC_01_Master_Executive</td><td><code>S1_CYCLIC_IO_SOUND</code> (Action <code>CALL Output()</code>)</td></tr>
+            <tr><td><code>Shutdow</code></td><td>1..4</td><td>0..6</td><td>SFC_04_ESD_Shutdown</td><td>Fail-safe output actions in <code>S40_PLANT_HEALTHY</code>, <code>S41_FULL_ESD_TRIP</code>, <code>S42_PUMPS_ONLY_TRIP</code></td></tr>
+            <tr><td><code>Protect</code> &amp; <code>FLT_1</code></td><td>1..7 / 1..5</td><td>0..16 / 0..1</td><td>SFC_03 &amp; SFC_06</td><td>Deluge relay outputs in <code>SFC_03</code> + 60s pulse &amp; 70s watchdog in <code>SFC_06_Line_Monitoring</code> (<code>S60..S66</code>)</td></tr>
+            <tr><td><code>Indicat</code> &amp; <code>Loc_Al</code></td><td>1..3 each</td><td>0..2 each</td><td>SFC_04 &amp; SFC_05</td><td>Panel lamp outputs (<code>%Q0012..0014</code>) in <code>SFC_04</code> &amp; Horn/Buzzer outputs (<code>%Q0002, 15, 16</code>) in <code>SFC_05</code></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+
+    function toggleIecCode() {
+      document.body.classList.toggle('show-iec-code');
+      document.getElementById('btnToggleCode').classList.toggle('active');
+    }
+
+    function copyPre(btn) {
+      const pre = btn.closest('.code-wrapper').querySelector('pre');
+      navigator.clipboard.writeText(pre.innerText);
+      const old = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = old, 1500);
+    }
+
+    // Interactive Simulator for Chart 1
+    function setSim1(state) {
+      ['c1-S0', 'c1-S1', 'c1-S10', 'c1-S11', 'c1-S12', 'c1-S13Idle', 'c1-S13'].forEach(id => {
+        document.getElementById(id).classList.remove('step-active');
+      });
+      const status = document.getElementById('sim1Status');
+      if (state === 'S0') {
+        document.getElementById('c1-S0').classList.add('step-active');
+        status.textContent = 'State: S0_INIT (First Scan #FST_SCN = 1 -> Clearing Timers & Latches)';
+      } else if (state === 'S10') {
+        ['c1-S1', 'c1-S10', 'c1-S13Idle'].forEach(id => document.getElementById(id).classList.add('step-active'));
+        status.textContent = 'State: S1_CYCLIC + S10_WARMUP_118S (t = 0..118s, CE_LOG Inhibited)';
+      } else if (state === 'S11') {
+        ['c1-S1', 'c1-S11', 'c1-S13Idle'].forEach(id => document.getElementById(id).classList.add('step-active'));
+        status.textContent = 'State: S1_CYCLIC + S11_AUTO_RESET_2S (t = 118..120s, System_Reset_Startup = 1)';
+      } else if (state === 'S12') {
+        ['c1-S1', 'c1-S12', 'c1-S13Idle'].forEach(id => document.getElementById(id).classList.add('step-active'));
+        status.textContent = 'State: S1_CYCLIC + S12_CE_ACTIVE (t >= 120s, T00002 = 1 -> CE_LOG Armed & Running)';
+      } else if (state === 'S13') {
+        ['c1-S1', 'c1-S12', 'c1-S13'].forEach(id => document.getElementById(id).classList.add('step-active'));
+        status.textContent = 'State: S13_HMI_RESET_5S (System_Reset = 1 for 5.0s + SVC_REQ 14 Fault Clear)';
+      }
+    }
+
+    // Interactive Simulator for Chart 3 (Deluge Sequence)
+    function setSim3(state) {
+      ['c3-S30', 'c3-S31', 'c3-S32', 'c3-S33', 'c3-S34', 'c3-S35', 'c3-S36', 'c3-S37', 'c3-S38', 'c3-S39', 'c3-S40'].forEach(id => {
+        document.getElementById(id).classList.remove('step-active');
+      });
+      const status = document.getElementById('sim3Status');
+      const labels = {
+        'S30': 'State: S30_DELUGE_IDLE (Pump A OFF, 2.0s Stop Pulse to Pump B, Timers Reset)',
+        'S32': 'State: S31_DUTY_PUMP_A_ON + S32_WAIT_PRESS_30S (Pump A Running, Waiting 30s for >= 50 PSI)',
+        'S33': 'State: S31_DUTY_PUMP_A_ON + S33_PUMP_B_PULSE_1 (t=30..32s: Diesel Pump B Start Pulse #1 ON!)',
+        'S34': 'State: S31_DUTY_PUMP_A_ON + S34_WAIT_RETRY1_60S (t=32..92s: Waiting 60s for Pressure)',
+        'S35': 'State: S31_DUTY_PUMP_A_ON + S35_PUMP_B_PULSE_2 (t=92..94s: Diesel Pump B Start Pulse #2 ON!)',
+        'S36': 'State: S31_DUTY_PUMP_A_ON + S36_WAIT_RETRY2_60S (t=94..154s: Waiting 60s for Pressure)',
+        'S37': 'State: S31_DUTY_PUMP_A_ON + S37_PUMP_B_PULSE_3 (t=154..156s: Diesel Pump B Start Pulse #3 ON!)',
+        'S38': 'State: S31_DUTY_PUMP_A_ON + S38_WAIT_FINAL_60S (t=156..216s: Final 60s Pressure Watchdog)',
+        'S40': 'State: S31_DUTY_PUMP_A_ON + S40_DELUGE_FAILED (t>=216s: DelugeFailedToRelease %M00620 = 1!)',
+        'S39': 'State: S31_DUTY_PUMP_A_ON + S39_PRESS_OK (PST_7503_001 >= 50 PSI Confirmed! Escalation Halted)'
+      };
+      if (state === 'S30') {
+        document.getElementById('c3-S30').classList.add('step-active');
+      } else {
+        document.getElementById('c3-S31').classList.add('step-active');
+        document.getElementById('c3-' + state).classList.add('step-active');
+      }
+      status.textContent = labels[state] || '';
+    }
+  </script>
+</body>
+</html>

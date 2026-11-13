@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RSLogix5000Content SchemaRevision="1.0" SoftwareRevision="17.00" TargetName="DOL_Starter_Example" TargetType="Controller" ContainsContext="false" Owner="example" ExportDate="Wed Nov 11 12:00:00 2026" ExportOptions="NoRawData L5KData">
+<Controller Use="Target" Name="DOL_Starter_Example" ProcessorType="Emulator" MajorRev="17" MinorRev="2" TimeSlice="20" ShareUnusedTimeSlice="1" ProjectCreationDate="Wed Nov 11 12:00:00 2026" LastModifiedDate="Wed Nov 11 12:00:00 2026" SFCExecutionControl="CurrentActive" SFCRestartPosition="MostRecent" SFCLastScan="DontScan" ProjectSN="16#0000_0000" MatchProjectToController="false" InhibitAutomaticFirmwareUpdate="0">
+<Description>
+<![CDATA[Example: direct-on-line (DOL) motor starter in ladder. One contactor, 3-wire start/stop, fail-safe NC protection contacts, contactor feedback supervision, latched fault with reset. Tags are plain BOOL/TIMER tags (no I/O modules) so the project verifies on its own.]]>
+</Description>
+<DataTypes/>
+<Modules>
+<Module Name="Local" CatalogNumber="Emulator" Vendor="1" ProductType="14" ProductCode="53" Major="17" Minor="2" ParentModule="Local" ParentModPortId="1" Inhibited="false" MajorFault="true">
+<EKey State="Disabled"/>
+<Ports>
+<Port Id="1" Address="0" Type="ICP" Upstream="false">
+<Bus Size="13"/>
+</Port>
+</Ports>
+</Module>
+</Modules>
+<Tags>
+<Tag Name="PB_Start" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Start pushbutton (NO contact): 1 while pressed]]>
+</Description>
+</Tag>
+<Tag Name="PB_Stop_OK" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Stop pushbutton (NC contact, fail-safe): 1 = NOT pressed, 0 = pressed or wire broken]]>
+</Description>
+</Tag>
+<Tag Name="PB_Reset" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Fault reset pushbutton (NO contact): 1 while pressed]]>
+</Description>
+</Tag>
+<Tag Name="ESTOP_OK" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Emergency stop circuit (NC, fail-safe): 1 = healthy, 0 = E-stop pressed or wire broken]]>
+</Description>
+</Tag>
+<Tag Name="OL_OK" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Thermal overload relay (NC contact, fail-safe): 1 = healthy, 0 = tripped]]>
+</Description>
+</Tag>
+<Tag Name="KM1_Aux" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Contactor KM1 auxiliary contact (NO): 1 = contactor mechanically closed]]>
+</Description>
+</Tag>
+<Tag Name="KM1_Coil" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Output to contactor KM1 coil: 1 = energise motor]]>
+</Description>
+</Tag>
+<Tag Name="Lamp_Run" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Green run lamp: follows the contactor feedback]]>
+</Description>
+</Tag>
+<Tag Name="Lamp_Fault" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Red fault lamp: on while a fault is latched]]>
+</Description>
+</Tag>
+<Tag Name="Permissive" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Motor is allowed to run: E-stop healthy, overload healthy, no latched fault]]>
+</Description>
+</Tag>
+<Tag Name="Motor_Run_Cmd" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Run command (seal-in): set by Start, cleared by Stop or loss of permissive]]>
+</Description>
+</Tag>
+<Tag Name="Fault_Latched" TagType="Base" DataType="BOOL">
+<Description>
+<![CDATA[Latched fault: feedback failure, welded contactor or overload trip. Cleared only by PB_Reset]]>
+</Description>
+</Tag>
+<Tag Name="TMR_FbFail" TagType="Base" DataType="TIMER">
+<Description>
+<![CDATA[On-delay: coil commanded but KM1_Aux not closed (1 s) = contactor failed to pull in]]>
+</Description>
+</Tag>
+<Tag Name="TMR_Welded" TagType="Base" DataType="TIMER">
+<Description>
+<![CDATA[On-delay: coil off but KM1_Aux still closed (1 s) = contactor welded]]>
+</Description>
+</Tag>
+</Tags>
+<Programs>
+<Program Name="MainProgram" TestEdits="false" MainRoutineName="MainRoutine" Disabled="false">
+<Tags/>
+<Routines>
+<Routine Name="MainRoutine" Type="RLL">
+<RLLContent>
+<Rung Number="0" Type="N">
+<Comment>
+<![CDATA[Rung 0 - Permissive. All safety/protection contacts are wired normally-closed (fail-safe), so XIC = healthy. A latched fault also removes the permissive.]]>
+</Comment>
+<Text>
+<![CDATA[XIC(ESTOP_OK)XIC(OL_OK)XIO(Fault_Latched)OTE(Permissive);]]>
+</Text>
+</Rung>
+<Rung Number="1" Type="N">
+<Comment>
+<![CDATA[Rung 1 - Start/stop seal-in (3-wire control). Start OR the seal-in branch, in series with the NC Stop and the permissive. Stop, E-stop, overload or fault drops the command.]]>
+</Comment>
+<Text>
+<![CDATA[[XIC(PB_Start),XIC(Motor_Run_Cmd)]XIC(PB_Stop_OK)XIC(Permissive)OTE(Motor_Run_Cmd);]]>
+</Text>
+</Rung>
+<Rung Number="2" Type="N">
+<Comment>
+<![CDATA[Rung 2 - Contactor output. One OTE per physical output; the command is kept separate from the output so logic and I/O can change independently.]]>
+</Comment>
+<Text>
+<![CDATA[XIC(Motor_Run_Cmd)OTE(KM1_Coil);]]>
+</Text>
+</Rung>
+<Rung Number="3" Type="N">
+<Comment>
+<![CDATA[Rung 3 - Feedback check. Coil is on but the aux contact has not closed after 1000 ms: the contactor did not pull in.]]>
+</Comment>
+<Text>
+<![CDATA[XIC(KM1_Coil)XIO(KM1_Aux)TON(TMR_FbFail,1000,0);]]>
+</Text>
+</Rung>
+<Rung Number="4" Type="N">
+<Comment>
+<![CDATA[Rung 4 - Welded contactor check. Coil is off but the aux contact is still closed after 1000 ms.]]>
+</Comment>
+<Text>
+<![CDATA[XIO(KM1_Coil)XIC(KM1_Aux)TON(TMR_Welded,1000,0);]]>
+</Text>
+</Rung>
+<Rung Number="5" Type="N">
+<Comment>
+<![CDATA[Rung 5 - Fault latch. Any of: feedback failure, welded contactor, overload trip. OTL keeps the fault through power-up of the logic until it is reset.]]>
+</Comment>
+<Text>
+<![CDATA[[XIC(TMR_FbFail.DN),XIC(TMR_Welded.DN),XIO(OL_OK)]OTL(Fault_Latched);]]>
+</Text>
+</Rung>
+<Rung Number="6" Type="N">
+<Comment>
+<![CDATA[Rung 6 - Fault reset. Only allowed when the cause has cleared (overload healthy, both timers done bits off). Reset never restarts the motor; the operator must press Start again.]]>
+</Comment>
+<Text>
+<![CDATA[XIC(PB_Reset)XIC(OL_OK)XIO(TMR_FbFail.DN)XIO(TMR_Welded.DN)OTU(Fault_Latched);]]>
+</Text>
+</Rung>
+<Rung Number="7" Type="N">
+<Comment>
+<![CDATA[Rung 7 - Run lamp. Driven from the contactor feedback, not from the command, so it shows the real motor state.]]>
+</Comment>
+<Text>
+<![CDATA[XIC(KM1_Aux)OTE(Lamp_Run);]]>
+</Text>
+</Rung>
+<Rung Number="8" Type="N">
+<Comment>
+<![CDATA[Rung 8 - Fault lamp.]]>
+</Comment>
+<Text>
+<![CDATA[XIC(Fault_Latched)OTE(Lamp_Fault);]]>
+</Text>
+</Rung>
+</RLLContent>
+</Routine>
+</Routines>
+</Program>
+</Programs>
+<Tasks>
+<Task Name="MainTask" Type="CONTINUOUS" Priority="10" Watchdog="500" DisableUpdateOutputs="false" InhibitTask="false">
+<ScheduledPrograms>
+<ScheduledProgram Name="MainProgram"/>
+</ScheduledPrograms>
+</Task>
+</Tasks>
+<CST MasterID="0"/>
+<WallClockTime LocalTimeAdjustment="0" TimeZone="0"/>
+</Controller>
+</RSLogix5000Content>
